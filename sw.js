@@ -1,4 +1,4 @@
-const CACHE = "opic-walk-v3";
+const CACHE = "opic-walk-v4";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png", "./icons/apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
