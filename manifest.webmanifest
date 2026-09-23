@@ -1,0 +1,18 @@
+{
+  "name": "오픽 산책 - OPIc 말하기 연습",
+  "short_name": "오픽 산책",
+  "description": "주제별 IM1~AL 모범 답안, 발음 교정, 실전 테스트로 연습하는 OPIc 학습 앱",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F7F4",
+  "theme_color": "#1F3D34",
+  "categories": ["education"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3D34">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="오픽 산책">
+<meta name="description" content="Jace의 OPIc 말하기 연습 앱: 주제별 IM1~AL 답안, 발음 교정, 실전 테스트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>오픽 산책 — OPIc 말하기 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pine:#1F3D34; --moss:#5E7F6E; --sage:#DDE7E0; --paper:#F5F7F4; --card:#FFFFFF;
+  --ink:#17201C; --mute:#5C6862; --line:#D3DCD6; --amber:#C98424; --amber-bg:#FBF1E1;
+  --ok:#2F7A4F; --ok-bg:#E3F2E8; --close:#A7741B; --close-bg:#FBF0D9; --miss:#B5473A; --miss-bg:#F8E3E0;
+  --l1:#A9C2B3; --l2:#76A08A; --l3:#44725E; --l4:#1F3D34;
+  --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --pine:#9CC7B2; --moss:#7FA592; --sage:#23332D; --paper:#121916; --card:#1A231F; --ink:#E6EEE9; --mute:#9AA8A1; --line:#2E3D36;
+  --amber:#E3A74C; --amber-bg:#34291A; --ok:#7CCB9A; --ok-bg:#1D3326; --close:#E2B560; --close-bg:#352B18; --miss:#EC8A7E; --miss-bg:#3A2320;
+  --l1:#4A6357; --l2:#5E8671; --l3:#7FAE95; --l4:#B4DCC6; }}
+:root[data-theme="dark"]{
+  --pine:#9CC7B2; --moss:#7FA592; --sage:#23332D; --paper:#121916; --card:#1A231F; --ink:#E6EEE9; --mute:#9AA8A1; --line:#2E3D36;
+  --amber:#E3A74C; --amber-bg:#34291A; --ok:#7CCB9A; --ok-bg:#1D3326; --close:#E2B560; --close-bg:#352B18; --miss:#EC8A7E; --miss-bg:#3A2320;
+  --l1:#4A6357; --l2:#5E8671; --l3:#7FAE95; --l4:#B4DCC6; }
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.bar{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:12px 20px}
+.brand{display:flex;align-items:baseline;gap:8px;margin-right:auto}
+.brand b{font-size:19px;font-weight:700;color:var(--pine);letter-spacing:-.02em}
+.brand span{font-size:12px;color:var(--mute)}
+nav.tabs{display:flex;gap:4px;background:var(--sage);padding:4px;border-radius:10px}
+nav.tabs button{border:0;background:transparent;padding:7px 16px;border-radius:7px;font-weight:600;font-size:14px;color:var(--mute)}
+nav.tabs button[aria-selected="true"]{background:var(--card);color:var(--pine);box-shadow:0 1px 2px rgba(20,40,30,.12)}
+
+main{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+
+/* Study layout */
+.study{display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start}
+.topics{position:sticky;top:84px;display:flex;flex-direction:column;gap:2px}
+.topics h2{font-size:12px;color:var(--mute);font-weight:500;margin:0 0 8px 10px}
+.topics button{border:0;background:transparent;text-align:left;padding:9px 12px;border-radius:8px;font-size:15px;color:var(--ink);border-left:3px solid transparent}
+.topics button:hover{background:var(--sage)}
+.topics button[aria-current="true"]{background:var(--card);border-left-color:var(--pine);font-weight:600;color:var(--pine)}
+
+.qhead{margin-bottom:22px}
+.qhead .q{font-family:var(--serif);font-size:24px;line-height:1.35;margin:0 0 6px;font-weight:600;color:var(--ink);max-width:36em}
+.qhead .qko{color:var(--mute);margin:0 0 10px}
+.rptip{margin:0 0 12px;padding:8px 12px;background:var(--amber-bg);border-radius:8px;font-size:14px;max-width:44em}
+.qhead .qplay{display:inline-flex;gap:8px}
+
+/* Trail level selector: the signature element */
+.trail{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px 16px;margin-bottom:18px}
+.trail-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.trail-title strong{font-size:14px;color:var(--pine)}
+.trail-title small{color:var(--mute);font-size:13px}
+.trail-steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);align-items:end;gap:0}
+.trail-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.step{position:relative;z-index:1;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 4px}
+.step .dot{width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--c);transition:transform .15s}
+.step .lv{font-weight:700;font-size:15px;color:var(--c)}
+.step .meta{font-size:12px;color:var(--mute);line-height:1.3;text-align:center}
+.step[aria-pressed="true"] .dot{background:var(--c);transform:scale(1.25)}
+.step[aria-pressed="true"] .lv{text-decoration:underline;text-underline-offset:4px}
+.step:hover .dot{transform:scale(1.15)}
+.lvnote{margin:14px 0 0;font-size:13px;color:var(--mute)}
+
+/* Toolbar */
+.toolbar{position:sticky;top:61px;z-index:10;background:var(--paper);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 0;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;user-select:none}
+.toggle input{appearance:none;width:34px;height:20px;border-radius:20px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:background .15s}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.toggle input:checked{background:var(--pine)}
+.toggle input:checked::after{left:16px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:5px 10px;font-size:13px;color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--pine);color:var(--paper)}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:8px;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--moss)}
+.btn.primary{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.btn.rec{background:var(--amber);border-color:var(--amber);color:#fff}
+.btn.rec.live{animation:pulse 1.2s infinite}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--amber) 30%,transparent)}}
+@media (prefers-reduced-motion:reduce){.btn.rec.live{animation:none}.step .dot{transition:none}}
+.ico{width:16px;height:16px;flex:none}
+
+/* Sentences */
+.sents{list-style:none;margin:0;padding:0}
+.sent{padding:18px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:30px 1fr;gap:4px 10px}
+.sent.playing .en{background:var(--amber-bg);box-shadow:0 0 0 4px var(--amber-bg);border-radius:3px}
+.sent .n{font-size:13px;color:var(--mute);padding-top:5px;font-variant-numeric:tabular-nums}
+.sent .en{font-family:var(--serif);font-size:20px;line-height:1.45;margin:0;max-width:40em}
+.sent .ko{margin:6px 0 0;color:var(--ink);font-size:14.5px;opacity:.85}
+.sent .pr{margin:2px 0 0;color:var(--moss);font-size:14px}
+.hide-ko .ko,.hide-pr .pr{display:none}
+.acts{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.acts .btn{padding:5px 11px;font-size:13px}
+.check{grid-column:2;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.check .status{font-size:13.5px;color:var(--mute);margin:0}
+.words{font-family:var(--serif);font-size:19px;line-height:1.9;margin:4px 0 8px}
+.w{padding:1px 3px;border-radius:4px;cursor:pointer}
+.w.ok{background:var(--ok-bg);color:var(--ok)}
+.w.close{background:var(--close-bg);color:var(--close);text-decoration:underline dotted}
+.w.miss{background:var(--miss-bg);color:var(--miss);text-decoration:line-through}
+.score{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.score .big{font-size:28px;font-weight:700;color:var(--pine);font-variant-numeric:tabular-nums}
+.score .lbl{font-size:13px;color:var(--mute)}
+.heard{font-size:13.5px;color:var(--mute);margin:0 0 8px}
+.heard b{color:var(--ink);font-weight:500}
+.tips{margin:8px 0 0;padding-left:18px;font-size:14px}
+.tips li{margin:3px 0}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.pats{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
+.pat{background:var(--sage);border-radius:8px;padding:8px 12px;font-size:13.5px}
+.pat b{font-family:var(--serif);font-size:15px;font-weight:600;margin-right:6px}
+.sec-t{font-size:14px;font-weight:600;color:var(--pine);margin:30px 0 4px}
+
+/* Compare */
+.compare{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+.cmp{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:14px}
+.cmp h3{margin:0 0 2px;font-size:15px;color:var(--c)}
+.cmp .wc{font-size:12px;color:var(--mute);margin-bottom:8px}
+.cmp p{font-family:var(--serif);font-size:15px;line-height:1.55;margin:0}
+
+/* Test */
+.test{max-width:760px;margin:0 auto}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
+.panel h2{margin:0 0 6px;font-size:22px;color:var(--pine)}
+.panel p.lead{margin:0 0 20px;color:var(--mute)}
+.field{margin:18px 0}
+.field label.t{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choices button{border:1px solid var(--line);background:var(--paper);padding:8px 16px;border-radius:8px;font-size:14px}
+.choices button[aria-pressed="true"]{border-color:var(--pine);background:var(--pine);color:var(--paper)}
+.steps-list{margin:0;padding-left:20px;color:var(--mute);font-size:14px}
+.steps-list li{margin:4px 0}
+.examiner{display:flex;gap:18px;align-items:center;margin-bottom:18px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--sage);display:grid;place-items:center;flex:none;position:relative}
+.avatar svg{width:40px;height:40px;color:var(--pine)}
+.avatar.talk::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--amber);animation:ring 1.2s infinite}
+@keyframes ring{50%{inset:-9px;opacity:.3}}
+@media (prefers-reduced-motion:reduce){.avatar.talk::after{animation:none}}
+.progress{font-size:13px;color:var(--mute)}
+.qtext{font-family:var(--serif);font-size:21px;line-height:1.4;margin:6px 0 0}
+.qtext.blur{filter:blur(6px);user-select:none}
+.timer{font-size:44px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--pine);text-align:center;margin:18px 0 4px;letter-spacing:.02em}
+.timer.warn{color:var(--miss)}
+.tbar{height:6px;background:var(--sage);border-radius:6px;overflow:hidden;margin-bottom:18px}
+.tbar div{height:100%;background:var(--amber);width:0}
+.live{min-height:80px;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:12px 14px;font-family:var(--serif);font-size:16px;color:var(--mute);margin-bottom:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.notice{background:var(--amber-bg);border-radius:10px;padding:10px 14px;font-size:14px;margin:12px 0}
+.overall{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.overall .lvbig{font-size:52px;font-weight:700;color:var(--pine);line-height:1}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.metric{background:var(--paper);border-radius:8px;padding:10px 12px}
+.metric b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.metric span{font-size:12px;color:var(--mute)}
+details.res{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:12px 0;padding:0 18px}
+details.res summary{cursor:pointer;padding:16px 0;display:flex;gap:12px;align-items:baseline;list-style:none}
+details.res summary::-webkit-details-marker{display:none}
+details.res summary .lvtag{font-weight:700;color:var(--pine);min-width:44px}
+details.res summary .qs{font-family:var(--serif);font-size:16px}
+details.res[open] summary{border-bottom:1px solid var(--line)}
+.resbody{padding:14px 0 18px}
+.resbody textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:15px;padding:10px 12px;resize:vertical}
+.found{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font-size:12.5px;padding:3px 9px;border-radius:20px;background:var(--ok-bg);color:var(--ok)}
+.chip.no{background:var(--sage);color:var(--mute)}
+.model{background:var(--paper);border-radius:10px;padding:12px 14px;margin-top:12px}
+.model p{font-family:var(--serif);margin:0 0 6px;font-size:15px}
+.ai{border-left:3px solid var(--pine);padding:4px 0 4px 14px;margin-top:14px;font-size:14.5px}
+.ai h4{margin:10px 0 4px;font-size:14px;color:var(--pine)}
+.ai ul{margin:0;padding-left:18px}
+.ai .fix{margin:6px 0}
+.ai .fix s{color:var(--miss)}
+.ai .fix ins{color:var(--ok);text-decoration:none;font-family:var(--serif);font-size:15px}
+.hint{font-size:13px;color:var(--mute)}
+
+/* Mobile */
+@media (max-width:860px){
+  .study{grid-template-columns:1fr;gap:12px}
+  .topics{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px}
+  .topics h2{display:none}
+  .topics button{white-space:nowrap;border-left:0;border:1px solid var(--line);background:var(--card)}
+  .topics button[aria-current="true"]{border-color:var(--pine);background:var(--pine);color:var(--paper)}
+  .compare{grid-template-columns:1fr 1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+  .qhead .q{font-size:21px}
+  .toolbar{top:57px}
+}
+@media (max-width:560px){
+  .bar{padding:10px 14px;gap:10px}
+  .brand span{display:none}
+  nav.tabs button{padding:6px 10px;font-size:13px}
+  main{padding:16px 14px 60px}
+  .compare{grid-template-columns:1fr}
+  .sent{grid-template-columns:22px 1fr}
+  .sent .en{font-size:18px}
+  .step .meta{display:none}
+  .panel{padding:18px}
+  .timer{font-size:36px}
+}
+
+/* App shell (mobile) */
+body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+#installBtn{display:none}
+#installBtn.show{display:inline-flex}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,20,15,.45);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);color:var(--ink);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet h3{margin:0 0 10px;color:var(--pine)}
+.sheet ol{margin:0 0 16px;padding-left:20px;line-height:1.9}
+@media (max-width:560px){
+  header nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;border-radius:0;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);justify-content:space-around}
+  header nav.tabs button{flex:1;padding:10px 0;font-size:14px}
+  main{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+  .toolbar{top:53px}
+  .sent .acts .btn{padding:8px 12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand"><b>오픽 산책</b><span>Jace의 OPIc 말하기 연습</span></div>
+    <button class="btn" id="installBtn">앱 설치</button>
+    <nav class="tabs" role="tablist" aria-label="메뉴">
+      <button role="tab" id="tab-study" aria-selected="true">주제별 학습</button>
+      <button role="tab" id="tab-test" aria-selected="false">실전 테스트</button>
+    </nav>
+  </div>
+</header>
+<main id="main"></main>
+
+<script>
+const TOPICS = [{"id":"intro","name":"자기소개","q":"Let's start the interview. Tell me a little bit about yourself.","qko":"인터뷰를 시작하겠습니다. 자신에 대해 조금 말씀해 주세요.","pat":[["I'm in my mid-fifties.","저는 50대 중반입니다"],["I've been -ing for ~ years","~년째 ~하고 있다"],["When it comes to ~,","~에 관해서라면"]],"L":{"IM1":[["Hi, my name is Jace.","안녕하세요, 제 이름은 제이스입니다.","하이, 마이 네임 이즈 제이스."],["I am in my fifties, and I live in Dongtan.","저는 50대이고 동탄에 삽니다.","아이 앰 인 마이 피프티즈, 앤 아이 리브 인 동탄."],["I work for Samsung SDS, and I like walking and movies.","저는 삼성SDS에 다니고, 산책과 영화를 좋아합니다.","아이 웍 포 삼성 에스디에스, 앤 아이 라익 워킹 앤 무비즈."]],"IM3":[["Hi, Eva. My name is Jace, and I'm in my mid-fifties.","안녕하세요, 에바. 제 이름은 제이스이고 50대 중반입니다.","하이, 에바. 마이 네임 이즈 제이스, 앤 아임 인 마이 미드 피프티즈."],["I live in Dongtan, a new city south of Seoul, with my wife and two children.","서울 남쪽 신도시 동탄에서 아내, 두 아이와 함께 삽니다.","아이 리브 인 동탄, 어 뉴 시티 사우쓰 어브 서울, 윗 마이 와이프 앤 투 칠드런."],["I've been working at Samsung SDS, an IT service company, for more than ten years.","IT 서비스 회사인 삼성SDS에서 10년 넘게 일하고 있습니다.","아이브 빈 워킹 앳 삼성 에스디에스, 언 아이티 써비스 컴퍼니, 포 모어 댄 텐 이어즈."],["In my free time, I usually go for a walk or watch movies because they help me relax.","여가 시간에는 보통 산책을 하거나 영화를 보는데, 마음이 편해지기 때문입니다.","인 마이 프리 타임, 아이 유쥬얼리 고 포 어 웍 오어 와치 무비즈 비코즈 데이 헬프 미 릴랙스."]],"IH":[["Hi, Eva. Nice to meet you. My name is Jace, and I'm in my mid-fifties.","안녕하세요, 에바. 반갑습니다. 제 이름은 제이스이고 50대 중반입니다.","하이, 에바. 나이스 투 밋츄. 마이 네임 이즈 제이스, 앤 아임 인 마이 미드 피프티즈."],["I live in Dongtan, a new city about an hour south of Seoul, in an apartment near Lake Park.","서울에서 남쪽으로 한 시간 정도 떨어진 신도시 동탄의 호수공원 근처 아파트에 삽니다.","아이 리브 인 동탄, 어 뉴 시티 어바웃 언 아워 사우쓰 어브 서울, 인 언 어파트먼트 니어 레이크 팍."],["There are four people in my family: my wife, my son, my daughter, and me.","우리 가족은 아내, 아들, 딸, 그리고 저 이렇게 네 명입니다.","데어 아 포 피플 인 마이 패밀리: 마이 와이프, 마이 썬, 마이 도러, 앤 미."],["I work at Samsung SDS, an IT service company, on the Digital SCM team, where I improve and operate our systems.","IT 서비스 회사인 삼성SDS의 디지털 SCM팀에서 시스템 개선과 운영을 맡고 있습니다.","아이 웍 앳 삼성 에스디에스, 언 아이티 써비스 컴퍼니, 온 더 디지털 에스씨엠 팀, 웨어 아이 임프루브 앤 아퍼레잇 아워 시스템즈."],["When it comes to hobbies, I love going for walks and watching movies, and these days I'm also getting into park golf.","취미에 관해서라면 산책과 영화 감상을 정말 좋아하고, 요즘은 파크골프에도 관심이 생겼습니다.","웬 잇 컴즈 투 하비즈, 아이 러브 고잉 포 웍스 앤 와칭 무비즈, 앤 디즈 데이즈 아임 올쏘 게링 인투 팍 골프."],["Walking clears my head, and movies let me forget about work for a while.","산책은 머리를 맑게 해 주고, 영화는 잠시 일을 잊게 해 줍니다.","워킹 클리어즈 마이 헤드, 앤 무비즈 렛 미 포겟 어바웃 웍 포 어 와일."]],"AL":[["Hi, Eva. It's nice to meet you. Let me introduce myself.","안녕하세요, 에바. 만나서 반갑습니다. 제 소개를 하겠습니다.","하이, 에바. 잇츠 나이스 투 밋츄. 렛 미 인트러듀스 마이셀프."],["My name is Jace, and I'm in my mid-fifties, so I guess you could say I'm at a stage of life where I think a lot about my health and the future.","제 이름은 제이스이고 50대 중반이라, 건강과 미래에 대해 많이 생각하는 시기에 있다고 할 수 있겠네요.","마이 네임 이즈 제이스, 앤 아임 인 마이 미드 피프티즈, 쏘 아이 게스 유 쿠드 쎄이 아임 앳 어 스테이지 어브 라이프 웨어 아이 띵크 어 랏 어바웃 마이 헬쓰 앤 더 퓨처."],["I live in Dongtan, a new city south of Seoul, with my wife and our two kids, in an apartment right next to Lake Park.","서울 남쪽 신도시 동탄에서 아내, 두 아이와 함께 호수공원 바로 옆 아파트에 살고 있습니다.","아이 리브 인 동탄, 어 뉴 시티 사우쓰 어브 서울, 윗 마이 와이프 앤 아워 투 키즈, 인 언 어파트먼트 라잇 넥스트 투 레이크 팍."],["Professionally, I work at Samsung SDS, one of Korea's largest IT service companies, and I'm on the Digital SCM team, handling system improvement and operations.","직업적으로는 한국 최대 IT 서비스 기업 중 하나인 삼성SDS의 디지털 SCM팀에서 시스템 개선과 운영을 맡고 있습니다.","프러페셔널리, 아이 웍 앳 삼성 에스디에스, 원 어브 코리아즈 라지스트 아이티 써비스 컴퍼니즈, 앤 아임 온 더 디지털 에스씨엠 팀, 핸들링 시스템 임프루브먼트 앤 아퍼레이션즈."],["It can be demanding at times, but I take pride in what I do.","가끔 힘들 때도 있지만, 제 일에 자부심을 느낍니다.","잇 캔 비 디맨딩 앳 타임즈, 벗 아이 테익 프라이드 인 왓 아이 두."],["Outside of work, I love walking around the lake with my wife and catching a movie at the theater in the park.","일 외에는 아내와 호수 주변을 걷고, 공원 안 극장에서 영화 보는 걸 좋아합니다.","아웃사이드 어브 웍, 아이 러브 워킹 어라운드 더 레이크 윗 마이 와이프 앤 캐칭 어 무비 앳 더 띠어터 인 더 팍."],["Lately, I've also become interested in park golf, since it seems like a great way to stay active at my age.","요즘은 파크골프에도 관심이 생겼는데, 제 나이에 활동적으로 지내기 좋은 방법 같아서입니다.","레잇리, 아이브 올쏘 비컴 인터레스티드 인 팍 골프, 씬스 잇 씸즈 라익 어 그레잇 웨이 투 스테이 액티브 앳 마이 에이지."],["Anyway, I'm really glad to be here, and I hope this goes well.","아무튼 이 자리에 오게 되어 정말 기쁘고, 잘 되었으면 좋겠습니다.","애니웨이, 아임 륄리 글래드 투 비 히어, 앤 아이 홉 디스 고즈 웰."]]},"cat":"sv"},{"id":"family","name":"가족","q":"Tell me about your family. Who are they, and what are they like?","qko":"가족에 대해 말해 주세요. 가족 구성원은 누구이고 어떤 사람들인가요?","pat":[["There are four of us.","우리는 네 식구입니다"],["make a point of -ing","꼭 ~하도록 하다"],["no matter how ~","아무리 ~해도"]],"L":{"IM1":[["There are four people in my family.","우리 가족은 네 명입니다.","데어 아 포 피플 인 마이 패밀리."],["I have a wife, a son, and a daughter.","아내와 아들, 딸이 있습니다.","아이 해브 어 와이프, 어 썬, 앤 어 도러."],["My family is very kind, and I love them.","우리 가족은 아주 착하고, 저는 가족을 사랑합니다.","마이 패밀리 이즈 베리 카인드, 앤 아이 러브 뎀."]],"IM3":[["There are four people in my family: my wife, my son, my daughter, and me.","우리 가족은 아내, 아들, 딸, 그리고 저 이렇게 네 명입니다.","데어 아 포 피플 인 마이 패밀리: 마이 와이프, 마이 썬, 마이 도러, 앤 미."],["My wife is a very warm person, and she takes good care of everyone.","아내는 아주 따뜻한 사람이고, 모두를 잘 챙깁니다.","마이 와이프 이즈 어 베리 웜 퍼슨, 앤 쉬 테익스 굿 케어 어브 에브리원."],["My son is 27 and works at a bank, and my daughter is 24 and is in graduate school.","아들은 27살로 은행에 다니고, 딸은 24살로 대학원에 다닙니다.","마이 썬 이즈 트웬티 쎄븐 앤 웍스 앳 어 뱅크, 앤 마이 도러 이즈 트웬티 포 앤 이즈 인 그래쥬잇 스쿨."],["We try to have dinner together on weekends.","우리는 주말에 함께 저녁을 먹으려고 합니다.","위 트라이 투 해브 디너 투게더 온 위켄즈."]],"IH":[["I have a family of four: my wife, our son, our daughter, and me.","우리는 아내, 아들, 딸, 저 이렇게 네 식구입니다.","아이 해브 어 패밀리 어브 포: 마이 와이프, 아워 썬, 아워 도러, 앤 미."],["My wife and I have been married for almost thirty years, and she's my best friend.","아내와 저는 결혼한 지 거의 30년이 되었고, 아내는 제 가장 친한 친구입니다.","마이 와이프 앤 아이 해브 빈 매리드 포 올모스트 써티 이어즈, 앤 쉬즈 마이 베스트 프렌드."],["Our son is 27, and he started working at a bank last year.","아들은 27살이고 작년에 은행에 취직했습니다.","아워 썬 이즈 트웬티 쎄븐, 앤 히 스타티드 워킹 앳 어 뱅크 래스트 이어."],["Our daughter is 24 and is studying design in graduate school.","딸은 24살이고 대학원에서 디자인을 공부하고 있습니다.","아워 도러 이즈 트웬티 포 앤 이즈 스터디잉 디자인 인 그래쥬잇 스쿨."],["Since the kids are busy these days, we make a point of having dinner together every Sunday.","요즘 아이들이 바빠서, 우리는 매주 일요일에 꼭 함께 저녁을 먹습니다.","씬스 더 키즈 아 비지 디즈 데이즈, 위 메익 어 포인트 어브 해빙 디너 투게더 에브리 썬데이."],["After dinner, we sometimes watch a movie together in the living room.","저녁 후에는 가끔 거실에서 함께 영화를 봅니다.","애프터 디너, 위 썸타임즈 와치 어 무비 투게더 인 더 리빙 룸."]],"AL":[["I'd say my family is small but really close.","우리 가족은 작지만 정말 가깝다고 할 수 있어요.","아이드 쎄이 마이 패밀리 이즈 스몰 벗 륄리 클로스."],["There are four of us: my wife, our son, our daughter, and me.","아내, 아들, 딸, 그리고 저 이렇게 넷입니다.","데어 아 포 어브 어스: 마이 와이프, 아워 썬, 아워 도러, 앤 미."],["My wife and I have been married for almost thirty years, and honestly, she's the one who holds everything together.","아내와 저는 결혼한 지 거의 30년이 되었는데, 솔직히 모든 걸 붙잡아 주는 사람은 아내입니다.","마이 와이프 앤 아이 해브 빈 매리드 포 올모스트 써티 이어즈, 앤 아너슬리, 쉬즈 더 원 후 홀즈 에브리띵 투게더."],["Our son, who's 27, landed a job at a bank last year, so he's still getting used to life as an office worker.","27살인 아들은 작년에 은행에 취직해서 아직 직장인 생활에 적응하는 중입니다.","아워 썬, 후즈 트웬티 쎄븐, 랜디드 어 잡 앳 어 뱅크 래스트 이어, 쏘 히즈 스틸 게링 유스트 투 라이프 애즈 언 오피스 워커."],["Our daughter is 24 and is doing her master's in design, and she's definitely the most creative one in the family.","딸은 24살로 디자인 석사 과정 중인데, 확실히 가족 중에서 가장 창의적입니다.","아워 도러 이즈 트웬티 포 앤 이즈 두잉 허 매스터즈 인 디자인, 앤 쉬즈 데피니틀리 더 모스트 크리에이티브 원 인 더 패밀리."],["When the kids were little, we did everything together, but now everyone has their own schedule.","아이들이 어렸을 때는 모든 걸 함께 했지만, 지금은 각자 일정이 있습니다.","웬 더 키즈 워 리를, 위 딧 에브리띵 투게더, 벗 나우 에브리원 해즈 데어 오운 스케쥴."],["That's why we made a rule to have dinner together every Sunday, no matter how busy we are.","그래서 아무리 바빠도 매주 일요일에는 함께 저녁을 먹자는 규칙을 만들었습니다.","댓츠 와이 위 메이드 어 룰 투 해브 디너 투게더 에브리 썬데이, 노 매러 하우 비지 위 아."],["Those Sunday dinners have become the highlight of my week.","그 일요일 저녁 식사는 제 한 주의 하이라이트가 되었습니다.","도즈 썬데이 디너즈 해브 비컴 더 하일라잇 어브 마이 윅."]]},"cat":"sv"},{"id":"home","name":"사는 곳","q":"Tell me about where you live. Describe your home and your neighborhood.","qko":"사는 곳에 대해 말해 주세요. 집과 동네를 묘사해 주세요.","pat":[["What I like most about ~ is that ~","~에서 가장 좋은 점은"],["We used to ~, but ~","예전엔 ~했지만"],["be full of ~","~로 가득하다"]],"L":{"IM1":[["I live in an apartment in Dongtan.","저는 동탄의 아파트에 삽니다.","아이 리브 인 언 어파트먼트 인 동탄."],["My apartment is near Lake Park.","우리 아파트는 호수공원 근처에 있습니다.","마이 어파트먼트 이즈 니어 레이크 팍."],["There are many parks and walking trails.","공원과 산책로가 많습니다.","데어 아 매니 팍스 앤 워킹 트레일즈."]],"IM3":[["I live in an apartment in Dongtan, a new city near Seoul.","서울 근처 신도시 동탄의 아파트에 삽니다.","아이 리브 인 언 어파트먼트 인 동탄, 어 뉴 시티 니어 서울."],["It has three bedrooms, two bathrooms, and a big living room.","방 세 개, 화장실 두 개, 그리고 큰 거실이 있습니다.","잇 해즈 쓰리 베드룸즈, 투 배쓰룸즈, 앤 어 빅 리빙 룸."],["My apartment is close to Lake Park, so I can see the lake from my window.","우리 아파트는 호수공원과 가까워서 창문으로 호수가 보입니다.","마이 어파트먼트 이즈 클로스 투 레이크 팍, 쏘 아이 캔 씨 더 레이크 프럼 마이 윈도우."],["There are walking trails and parks nearby, so I often go for a walk.","근처에 산책로와 공원이 있어서 자주 산책을 갑니다.","데어 아 워킹 트레일즈 앤 팍스 니어바이, 쏘 아이 오픈 고 포 어 웍."]],"IH":[["I live in a three-bedroom apartment in Dongtan, which is a new city about an hour south of Seoul.","서울에서 남쪽으로 한 시간 정도 떨어진 신도시 동탄의 방 세 개짜리 아파트에 삽니다.","아이 리브 인 어 쓰리 베드룸 어파트먼트 인 동탄, 위치 이즈 어 뉴 시티 어바웃 언 아워 사우쓰 어브 서울."],["We moved here a few years ago because we wanted a quieter place with more green space.","몇 년 전 더 조용하고 녹지가 많은 곳을 원해서 이사 왔습니다.","위 무브드 히어 어 퓨 이어즈 어고 비코즈 위 원티드 어 콰이어터 플레이스 윗 모어 그린 스페이스."],["When you walk in, you can see a spacious living room with a big TV and a comfortable sofa.","들어오면 큰 TV와 편안한 소파가 있는 넓은 거실이 보입니다.","웬 유 웍 인, 유 캔 씨 어 스페이셔스 리빙 룸 윗 어 빅 티비 앤 어 컴퍼터블 소파."],["What I like most about my home is that it's right next to Lake Park.","우리 집에서 가장 좋은 점은 호수공원 바로 옆이라는 것입니다.","왓 아이 라익 모스트 어바웃 마이 홈 이즈 댓 잇츠 라잇 넥스트 투 레이크 팍."],["There are walking trails and small parks all around, so it's perfect for an evening walk.","주변에 산책로와 작은 공원들이 있어서 저녁 산책에 딱입니다.","데어 아 워킹 트레일즈 앤 스몰 팍스 올 어라운드, 쏘 잇츠 퍼펙트 포 언 이브닝 웍."],["It's not as convenient as Seoul, but I think it's a great place to live.","서울만큼 편리하지는 않지만, 살기 좋은 곳이라고 생각합니다.","잇츠 낫 애즈 컨비니언트 애즈 서울, 벗 아이 띵크 잇츠 어 그레잇 플레이스 투 리브."]],"AL":[["I live in Dongtan, a new city about an hour south of Seoul, in a three-bedroom apartment overlooking Lake Park.","서울 남쪽으로 한 시간 정도 떨어진 신도시 동탄에서 호수공원이 내려다보이는 방 세 개짜리 아파트에 삽니다.","아이 리브 인 동탄, 어 뉴 시티 어바웃 언 아워 사우쓰 어브 서울, 인 어 쓰리 베드룸 어파트먼트 오버루킹 레이크 팍."],["We used to live in the middle of Seoul, but a few years ago, we decided to move out here for more space and cleaner air.","예전엔 서울 한복판에 살았지만, 몇 년 전 더 넓은 공간과 깨끗한 공기를 위해 이곳으로 이사하기로 했습니다.","위 유스투 리브 인 더 미들 어브 서울, 벗 어 퓨 이어즈 어고, 위 디사이디드 투 무브 아웃 히어 포 모어 스페이스 앤 클리너 에어."],["Looking back, it was one of the best decisions we've ever made.","돌이켜 보면, 우리가 내린 최고의 결정 중 하나였습니다.","루킹 백, 잇 워즈 원 어브 더 베스트 디시젼즈 위브 에버 메이드."],["The heart of our home is the living room, where we gather to watch movies on weekends.","우리 집의 중심은 거실인데, 주말마다 모여 영화를 보는 곳입니다.","더 하트 어브 아워 홈 이즈 더 리빙 룸, 웨어 위 개더 투 와치 무비즈 온 위켄즈."],["But honestly, my favorite spot is the balcony, because I can see the lake while I have my morning coffee.","하지만 솔직히 제일 좋아하는 곳은 베란다인데, 아침 커피를 마시며 호수를 볼 수 있기 때문입니다.","벗 아너슬리, 마이 페이버릿 스팟 이즈 더 발커니, 비코즈 아이 캔 씨 더 레이크 와일 아이 해브 마이 모닝 커피."],["The neighborhood is full of green space, with walking trails and parks just a few minutes from our building.","동네는 녹지로 가득하고, 건물에서 몇 분 거리에 산책로와 공원이 있습니다.","더 네이버훗 이즈 풀 어브 그린 스페이스, 윗 워킹 트레일즈 앤 팍스 저스트 어 퓨 미닛츠 프럼 아워 빌딩."],["The only downside is the commute, since it takes me over an hour to get to my office in Seoul.","유일한 단점은 출퇴근인데, 서울 사무실까지 한 시간 넘게 걸리기 때문입니다.","디 온리 다운사이드 이즈 더 커뮤트, 씬스 잇 테익스 미 오버 언 아워 투 겟 투 마이 오피스 인 서울."],["Still, when I come home and see the lake, I feel like it's all worth it.","그래도 집에 와서 호수를 보면 그럴 만한 가치가 있다고 느낍니다.","스틸, 웬 아이 컴 홈 앤 씨 더 레이크, 아이 필 라익 잇츠 올 워쓰 잇."]]},"cat":"sv"},{"id":"work","name":"직장 생활","q":"Tell me about your job. What company do you work for, and what do you do there?","qko":"직업에 대해 말해 주세요. 어떤 회사에 다니고 무슨 일을 하나요?","pat":[["~ stands for ~","~는 ~의 약자다"],["My role is to ~","제 역할은 ~하는 것이다"],["what keeps me going","나를 계속 움직이게 하는 것"]],"L":{"IM1":[["I work for Samsung SDS.","삼성SDS에 다닙니다.","아이 웍 포 삼성 에스디에스."],["I am on the Digital SCM team.","디지털 SCM팀에 있습니다.","아이 앰 온 더 디지털 에스씨엠 팀."],["I improve and run computer systems.","시스템을 개선하고 운영합니다.","아이 임프루브 앤 런 컴퓨러 시스템즈."]],"IM3":[["I work for Samsung SDS, a big IT service company in Korea.","한국의 큰 IT 서비스 회사인 삼성SDS에 다닙니다.","아이 웍 포 삼성 에스디에스, 어 빅 아이티 써비스 컴퍼니 인 코리아."],["I'm on the Digital SCM team, which manages supply chain systems.","공급망 시스템을 관리하는 디지털 SCM팀에 있습니다.","아임 온 더 디지털 에스씨엠 팀, 위치 매니지즈 서플라이 체인 시스템즈."],["My job is to improve our systems and make sure they run well every day.","제 일은 시스템을 개선하고 매일 잘 돌아가게 하는 것입니다.","마이 잡 이즈 투 임프루브 아워 시스템즈 앤 메익 슈어 데이 런 웰 에브리 데이."],["It's sometimes stressful, but I'm proud of my work.","가끔 스트레스를 받지만 제 일이 자랑스럽습니다.","잇츠 썸타임즈 스트레스풀, 벗 아임 프라우드 어브 마이 웍."]],"IH":[["I work for Samsung SDS, which is one of the largest IT service companies in Korea.","한국 최대 IT 서비스 회사 중 하나인 삼성SDS에서 일합니다.","아이 웍 포 삼성 에스디에스, 위치 이즈 원 어브 더 라지스트 아이티 써비스 컴퍼니즈 인 코리아."],["I'm on the Digital SCM team, and SCM stands for supply chain management.","디지털 SCM팀에 있는데, SCM은 공급망 관리를 뜻합니다.","아임 온 더 디지털 에스씨엠 팀, 앤 에스씨엠 스탠즈 포 서플라이 체인 매니지먼트."],["Basically, our systems help companies manage everything from ordering materials to delivering products.","기본적으로 우리 시스템은 기업이 자재 주문부터 제품 배송까지 전부 관리하도록 돕습니다.","베이시컬리, 아워 시스템즈 헬프 컴퍼니즈 매니지 에브리띵 프럼 오더링 머티리얼즈 투 딜리버링 프라덕츠."],["My role is to operate those systems and find ways to improve them.","제 역할은 그 시스템을 운영하고 개선 방법을 찾는 것입니다.","마이 롤 이즈 투 아퍼레잇 도즈 시스템즈 앤 파인드 웨이즈 투 임프루브 뎀."],["I usually start my day by checking that everything ran smoothly overnight, and then I have meetings with users about their requests.","보통 밤사이 모든 게 잘 돌아갔는지 확인하며 하루를 시작하고, 그 다음 사용자 요청에 대해 회의를 합니다.","아이 유쥬얼리 스타트 마이 데이 바이 체킹 댓 에브리띵 랜 스무들리 오버나잇, 앤 덴 아이 해브 미링즈 윗 유저즈 어바웃 데어 리퀘스츠."],["When an improvement makes someone's work easier, it makes me feel really proud.","개선한 것이 누군가의 일을 쉽게 만들어 주면 정말 뿌듯합니다.","웬 언 임프루브먼트 메익스 썸원즈 웍 이지어, 잇 메익스 미 필 륄리 프라우드."]],"AL":[["I work for Samsung SDS, one of the biggest IT service providers in Korea, and I've been there for more than ten years.","한국 최대 IT 서비스 기업 중 하나인 삼성SDS에서 10년 넘게 일하고 있습니다.","아이 웍 포 삼성 에스디에스, 원 어브 더 비기스트 아이티 써비스 프러바이더즈 인 코리아, 앤 아이브 빈 데어 포 모어 댄 텐 이어즈."],["Right now, I'm on the Digital SCM team, where I focus on system improvement and operations.","지금은 디지털 SCM팀에서 시스템 개선과 운영을 맡고 있습니다.","라잇 나우, 아임 온 더 디지털 에스씨엠 팀, 웨어 아이 포커스 온 시스템 임프루브먼트 앤 아퍼레이션즈."],["In simple terms, supply chain management is about getting the right products to the right place at the right time, and our systems make that possible.","쉽게 말해 공급망 관리는 알맞은 제품을 알맞은 곳에 알맞은 때 보내는 것이고, 우리 시스템이 그걸 가능하게 합니다.","인 심플 텀즈, 서플라이 체인 매니지먼트 이즈 어바웃 게링 더 라잇 프라덕츠 투 더 라잇 플레이스 앳 더 라잇 타임, 앤 아워 시스템즈 메익 댓 파서블."],["A typical day starts with checking the overnight batch jobs and dashboards to make sure nothing went wrong.","보통 하루는 밤사이 배치 작업과 대시보드를 확인해 문제가 없는지 보는 것으로 시작합니다.","어 티피컬 데이 스타츠 윗 체킹 디 오버나잇 배치 잡스 앤 대쉬보즈 투 메익 슈어 낫띵 웬트 롱."],["After that, I spend a lot of time talking with business users, figuring out what's slowing them down, and planning improvements.","그 다음 현업 사용자와 이야기하며 무엇이 일을 더디게 하는지 파악하고 개선을 계획하는 데 많은 시간을 씁니다.","애프터 댓, 아이 스펜드 어 랏 어브 타임 토킹 윗 비즈니스 유저즈, 피겨링 아웃 왓츠 슬로잉 뎀 다운, 앤 플래닝 임프루브먼츠."],["The hardest part is when a system issue comes up unexpectedly, because the whole supply chain can be affected, so we have to fix it fast.","가장 힘든 건 시스템 장애가 갑자기 생길 때인데, 공급망 전체에 영향을 줄 수 있어 빨리 고쳐야 하기 때문입니다.","더 하디스트 파트 이즈 웬 어 시스템 이슈 컴즈 업 언익스펙티들리, 비코즈 더 호울 서플라이 체인 캔 비 어펙티드, 쏘 위 해브 투 픽스 잇 패스트."],["These days, the company is also bringing AI into many of its services, so there's always something new to learn.","요즘은 회사가 여러 서비스에 AI를 도입하고 있어서 늘 새로 배울 것이 있습니다.","디즈 데이즈, 더 컴퍼니 이즈 올쏘 브링잉 에이아이 인투 매니 어브 잇츠 써비시즈, 쏘 데어즈 올웨이즈 썸띵 뉴 투 런."],["Seeing a small improvement save people hours of work is what keeps me going.","작은 개선이 사람들의 일을 몇 시간씩 줄여 주는 걸 보는 것이 저를 계속 나아가게 합니다.","씽 어 스몰 임프루브먼트 쎄이브 피플 아워즈 어브 웍 이즈 왓 킵스 미 고잉."]]},"cat":"sv"},{"id":"walk","name":"산책·운동","q":"You indicated that you like to go for walks. Where do you usually walk, and why do you enjoy it?","qko":"산책을 좋아한다고 하셨는데요. 주로 어디서 걷고, 왜 좋아하나요?","pat":[["go for a walk","산책하러 가다"],["Since I turned fifty, I've realized ~","50대가 된 이후로 ~를 깨달았다"],["never bothered to ~","굳이 ~하지 않았다"]],"L":{"IM1":[["I like walking.","저는 산책을 좋아합니다.","아이 라익 워킹."],["I walk with my wife after dinner.","저녁 먹고 아내와 걷습니다.","아이 웍 윗 마이 와이프 애프터 디너."],["We walk for one hour in Lake Park.","호수공원에서 한 시간 걷습니다.","위 웍 포 원 아워 인 레이크 팍."]],"IM3":[["I go for a walk almost every evening after dinner.","거의 매일 저녁 식사 후에 산책을 합니다.","아이 고 포 어 웍 올모스트 에브리 이브닝 애프터 디너."],["I usually walk around Lake Park with my wife for about an hour.","보통 아내와 호수공원을 한 시간 정도 걷습니다.","아이 유쥬얼리 웍 어라운드 레이크 팍 윗 마이 와이프 포 어바웃 언 아워."],["There is exercise equipment on the trail, so I often use it.","산책로에 운동기구가 있어서 자주 이용합니다.","데어 이즈 엑서사이즈 이큅먼트 온 더 트레일, 쏘 아이 오픈 유즈 잇."],["I also do stretching because it is very important in my fifties.","50대에는 스트레칭이 아주 중요해서 스트레칭도 합니다.","아이 올쏘 두 스트레칭 비코즈 잇 이즈 베리 임포턴트 인 마이 피프티즈."]],"IH":[["I go for a walk almost every evening, usually right after dinner.","거의 매일 저녁, 보통 저녁 식사 직후에 산책을 합니다.","아이 고 포 어 웍 올모스트 에브리 이브닝, 유쥬얼리 라잇 애프터 디너."],["My apartment is right next to Lake Park in Dongtan, so there are walking trails and parks all around me.","제 아파트가 동탄 호수공원 바로 옆이라 주변이 온통 산책로와 공원입니다.","마이 어파트먼트 이즈 라잇 넥스트 투 레이크 팍 인 동탄, 쏘 데어 아 워킹 트레일즈 앤 팍스 올 어라운드 미."],["My wife and I usually walk around the lake for about an hour, and it's our time to catch up on each other's day.","아내와 저는 보통 한 시간 정도 호수를 도는데, 서로의 하루를 이야기하는 시간입니다.","마이 와이프 앤 아이 유쥬얼리 웍 어라운드 더 레이크 포 어바웃 언 아워, 앤 잇츠 아워 타임 투 캐치 업 온 이치 아더즈 데이."],["There's some exercise equipment along the trail, so I often stop there and use it for a few minutes.","산책로를 따라 운동기구가 있어서 자주 멈춰서 몇 분씩 이용합니다.","데어즈 썸 엑서사이즈 이큅먼트 얼롱 더 트레일, 쏘 아이 오픈 스탑 데어 앤 유즈 잇 포 어 퓨 미닛츠."],["Since I turned fifty, I've realized that stretching is really important, so I always stretch before and after walking.","50대가 된 이후 스트레칭이 정말 중요하다는 걸 깨달아서, 걷기 전후로 항상 스트레칭을 합니다.","씬스 아이 턴드 피프티, 아이브 리얼라이즈드 댓 스트레칭 이즈 륄리 임포턴트, 쏘 아이 올웨이즈 스트레치 비포 앤 애프터 워킹."],["Walking helps me clear my head, and it keeps me healthy without putting too much strain on my knees.","산책은 머리를 맑게 해 주고 무릎에 큰 무리 없이 건강을 지켜 줍니다.","워킹 헬프스 미 클리어 마이 헤드, 앤 잇 킵스 미 헬씨 위다웃 푸링 투 머치 스트레인 온 마이 니즈."]],"AL":[["Walking has become a big part of my daily routine, especially since I moved to Dongtan.","산책은 특히 동탄으로 이사 온 뒤로 제 일상의 큰 부분이 되었습니다.","워킹 해즈 비컴 어 빅 파트 어브 마이 데일리 루틴, 이스페셜리 씬스 아이 무브드 투 동탄."],["My apartment is right by Lake Park, and the whole area is surrounded by walking trails and small parks.","제 아파트는 호수공원 바로 옆이고, 동네 전체가 산책로와 작은 공원으로 둘러싸여 있습니다.","마이 어파트먼트 이즈 라잇 바이 레이크 팍, 앤 더 호울 에리아 이즈 서라운디드 바이 워킹 트레일즈 앤 스몰 팍스."],["Almost every evening after dinner, my wife and I head out and walk around the lake for about an hour.","거의 매일 저녁 식사 후 아내와 저는 나가서 한 시간 정도 호수를 돕니다.","올모스트 에브리 이브닝 애프터 디너, 마이 와이프 앤 아이 헤드 아웃 앤 웍 어라운드 더 레이크 포 어바웃 언 아워."],["Halfway through, we usually stop at the outdoor exercise area, where I do a few sets on the machines.","중간쯤 야외 운동기구 구역에 들러서 기구로 몇 세트 운동을 합니다.","해프웨이 쓰루, 위 유쥬얼리 스탑 앳 디 아웃도어 엑서사이즈 에리아, 웨어 아이 두 어 퓨 셋츠 온 더 머신즈."],["To be honest, when I was younger, I never bothered to stretch, but after turning fifty, my body started telling me otherwise.","솔직히 젊을 땐 굳이 스트레칭을 하지 않았는데, 50대가 되니 몸이 그러면 안 된다고 알려 주더군요.","투 비 아너스트, 웬 아이 워즈 영거, 아이 네버 바더드 투 스트레치, 벗 애프터 터닝 피프티, 마이 바디 스타티드 텔링 미 아더와이즈."],["Now I stretch for about ten minutes before and after every walk, and my back and knees feel so much better.","이제는 매번 걷기 전후로 10분 정도 스트레칭을 하는데, 허리와 무릎이 훨씬 좋아졌습니다.","나우 아이 스트레치 포 어바웃 텐 미닛츠 비포 앤 애프터 에브리 웍, 앤 마이 백 앤 니즈 필 쏘 머치 베러."],["Some of the best conversations I've had with my wife have happened on that trail.","아내와 나눈 가장 좋은 대화 중 몇몇은 그 산책로에서 있었습니다.","썸 어브 더 베스트 칸버쎄이션즈 아이브 해드 윗 마이 와이프 해브 해픈드 온 댓 트레일."],["So for me, walking is the best way to stay healthy and stay connected at the same time.","그래서 제게 산책은 건강도 지키고 아내와도 가까워지는 가장 좋은 방법입니다.","쏘 포 미, 워킹 이즈 더 베스트 웨이 투 스테이 헬씨 앤 스테이 커넥티드 앳 더 쎄임 타임."]]},"cat":"sv"},{"id":"movie","name":"영화 보기","q":"What kind of movies do you like? Where do you usually watch them?","qko":"어떤 영화를 좋아하나요? 주로 어디서 보나요?","pat":[["be all about ~","~에 푹 빠져 있다"],["be drawn to ~","~에 끌리다"],["On the other hand,","반면에"]],"L":{"IM1":[["I like watching movies.","저는 영화 보는 것을 좋아합니다.","아이 라익 와칭 무비즈."],["I go to the CGV in Lake Park.","호수공원에 있는 CGV에 갑니다.","아이 고 투 더 씨지비 인 레이크 팍."],["I like action movies and Korean movies.","액션 영화와 한국 영화를 좋아합니다.","아이 라익 액션 무비즈 앤 코리안 무비즈."]],"IM3":[["I love watching movies, especially action movies and Korean historical movies.","영화, 특히 액션 영화와 한국 사극 영화를 정말 좋아합니다.","아이 러브 와칭 무비즈, 이스페셜리 액션 무비즈 앤 코리안 히스토리컬 무비즈."],["I often go to the CGV multiplex in Lake Park because it is close to my home.","집에서 가까워서 호수공원에 있는 CGV 멀티플렉스에 자주 갑니다.","아이 오픈 고 투 더 씨지비 멀티플렉스 인 레이크 팍 비코즈 잇 이즈 클로스 투 마이 홈."],["I usually go with my wife on weekends.","보통 주말에 아내와 갑니다.","아이 유쥬얼리 고 윗 마이 와이프 온 위켄즈."],["Watching movies helps me forget my stress.","영화를 보면 스트레스를 잊을 수 있습니다.","와칭 무비즈 헬프스 미 포겟 마이 스트레스."]],"IH":[["I really enjoy watching movies, and my favorite genres are action movies and Korean historical films.","영화 보는 걸 정말 좋아하고, 가장 좋아하는 장르는 액션 영화와 한국 사극 영화입니다.","아이 륄리 인조이 와칭 무비즈, 앤 마이 페이버릿 장르즈 아 액션 무비즈 앤 코리안 히스토리컬 필름즈."],["There's a CGV multiplex in Lake Park, just a ten-minute walk from my apartment, so I go there quite often.","아파트에서 걸어서 10분 거리인 호수공원에 CGV 멀티플렉스가 있어서 꽤 자주 갑니다.","데어즈 어 씨지비 멀티플렉스 인 레이크 팍, 저스트 어 텐 미닛 웍 프럼 마이 어파트먼트, 쏘 아이 고 데어 콰잇 오픈."],["I love action movies because they're exciting and help me relieve stress.","액션 영화는 신나고 스트레스 해소에 도움이 되어서 좋아합니다.","아이 러브 액션 무비즈 비코즈 데어 익싸이팅 앤 헬프 미 릴리브 스트레스."],["On the other hand, Korean historical films teach me something about our past.","반면 한국 사극 영화는 우리 과거에 대해 무언가를 가르쳐 줍니다.","온 디 아더 핸드, 코리안 히스토리컬 필름즈 티치 미 썸띵 어바웃 아워 패스트."],["My wife and I usually go on Saturday evenings, right after our walk around the lake.","아내와 저는 보통 토요일 저녁, 호수 산책 직후에 갑니다.","마이 와이프 앤 아이 유쥬얼리 고 온 쌔러데이 이브닝즈, 라잇 애프터 아워 웍 어라운드 더 레이크."],["A good movie at the end of the week helps me recharge for the next week.","주말에 보는 좋은 영화 한 편은 다음 주를 위한 재충전에 도움이 됩니다.","어 굿 무비 앳 디 엔드 어브 더 윅 헬프스 미 리차지 포 더 넥스트 윅."]],"AL":[["I'm a big movie fan, and I'd say my taste has changed quite a bit over the years.","저는 영화를 무척 좋아하는데, 취향이 세월이 지나며 꽤 많이 바뀌었다고 할 수 있습니다.","아임 어 빅 무비 팬, 앤 아이드 쎄이 마이 테이스트 해즈 체인지드 콰잇 어 빗 오버 디 이어즈."],["When I was in my thirties, I was all about action movies, and the Tomb Raider series was my absolute favorite.","30대 때는 액션 영화에 푹 빠져 있었고, 툼레이더 시리즈를 가장 좋아했습니다.","웬 아이 워즈 인 마이 써티즈, 아이 워즈 올 어바웃 액션 무비즈, 앤 더 툼 레이더 시리즈 워즈 마이 앱설룻 페이버릿."],["These days, though, I'm more drawn to Korean historical films that have something meaningful to say.","하지만 요즘에는 의미 있는 메시지를 담은 한국 사극 영화에 더 끌립니다.","디즈 데이즈, 도우, 아임 모어 드론 투 코리안 히스토리컬 필름즈 댓 해브 썸띵 미닝풀 투 쎄이."],["I think it's because, at my age, I can relate to characters who are dealing with loss, loyalty, and getting older.","제 나이가 되니 상실, 의리, 나이 듦을 겪는 인물들에게 공감하기 때문인 것 같습니다.","아이 띵크 잇츠 비코즈, 앳 마이 에이지, 아이 캔 릴레이트 투 캐릭터즈 후 아 딜링 윗 로스, 로열티, 앤 게링 올더."],["Luckily, there's a CGV multiplex right in Lake Park, just a ten-minute walk from my apartment.","다행히 호수공원에 CGV 멀티플렉스가 있어서 아파트에서 걸어서 10분이면 갑니다.","럭킬리, 데어즈 어 씨지비 멀티플렉스 라잇 인 레이크 팍, 저스트 어 텐 미닛 웍 프럼 마이 어파트먼트."],["It's modern and comfortable, and there are plenty of restaurants nearby, so it's perfect for a date night with my wife.","현대적이고 편안한 데다 근처에 식당도 많아서 아내와 데이트하기에 딱입니다.","잇츠 마던 앤 컴퍼터블, 앤 데어 아 플렌티 어브 레스토랑츠 니어바이, 쏘 잇츠 퍼펙트 포 어 데잇 나잇 윗 마이 와이프."],["We often combine the two things we love most: a walk around the lake, and then a movie.","우리는 가장 좋아하는 두 가지를 자주 함께 합니다. 호수 산책 후 영화 한 편이죠.","위 오픈 컴바인 더 투 띵즈 위 러브 모스트: 어 웍 어라운드 더 레이크, 앤 덴 어 무비."],["For me, a good movie is more than entertainment; it's a chance to reflect on my own life.","저에게 좋은 영화는 오락 그 이상이고, 제 삶을 돌아볼 기회입니다.","포 미, 어 굿 무비 이즈 모어 댄 엔터테인먼트; 잇츠 어 챈스 투 리플렉트 온 마이 오운 라이프."]]},"cat":"sv"},{"id":"memory","name":"기억에 남는 영화","q":"Tell me about the movie you remember the most. What was it about, and why was it so memorable?","qko":"가장 기억에 남는 영화에 대해 말해 주세요. 어떤 내용이고, 왜 그렇게 기억에 남나요?","pat":[["If I had to pick ~, it would be ~","~를 하나 꼽으라면 ~일 것이다"],["be blown away by ~","~에 완전히 압도되다"],["can't help but ~","~하지 않을 수 없다"]],"L":{"IM1":[["My favorite movie is Tomb Raider.","제가 제일 좋아하는 영화는 툼레이더입니다.","마이 페이버릿 무비 이즈 툼 레이더."],["It is an action movie with Angelina Jolie.","앤젤리나 졸리가 나오는 액션 영화입니다.","잇 이즈 언 액션 무비 윗 앤젤리나 졸리."],["It was very exciting.","아주 신났습니다.","잇 워즈 베리 익싸이팅."]],"IM3":[["The most memorable movie for me is the Tomb Raider series.","제게 가장 기억에 남는 영화는 툼레이더 시리즈입니다.","더 모스트 메모러블 무비 포 미 이즈 더 툼 레이더 시리즈."],["It is about an adventurer named Lara Croft who looks for ancient treasures.","고대 보물을 찾는 라라 크로프트라는 모험가 이야기입니다.","잇 이즈 어바웃 언 어드벤처러 네임드 라라 크로프트 후 룩스 포 에인션트 트레져즈."],["I first saw it in a theater when I was about thirty.","서른 살쯤 극장에서 처음 봤습니다.","아이 퍼스트 쏘 잇 인 어 띠어터 웬 아이 워즈 어바웃 써티."],["The action scenes were amazing, and I watched it again many times.","액션 장면이 대단해서 여러 번 다시 봤습니다.","디 액션 씬즈 워 어메이징, 앤 아이 와치트 잇 어겐 매니 타임즈."]],"IH":[["I'd like to tell you about the movie I remember the most, the Tomb Raider series.","가장 기억에 남는 영화인 툼레이더 시리즈에 대해 말씀드리겠습니다.","아이드 라익 투 텔 유 어바웃 더 무비 아이 리멤버 더 모스트, 더 툼 레이더 시리즈."],["It's about Lara Croft, a brave adventurer who travels around the world looking for ancient treasures.","고대 보물을 찾아 세계를 누비는 용감한 모험가 라라 크로프트의 이야기입니다.","잇츠 어바웃 라라 크로프트, 어 브레이브 어드벤처러 후 트래블즈 어라운드 더 월드 루킹 포 에인션트 트레져즈."],["I first saw it in a theater in my early thirties, and I was blown away by the action scenes.","30대 초반에 극장에서 처음 봤는데, 액션 장면에 완전히 압도됐습니다.","아이 퍼스트 쏘 잇 인 어 띠어터 인 마이 얼리 써티즈, 앤 아이 워즈 블론 어웨이 바이 디 액션 씬즈."],["Angelina Jolie was perfect as Lara, and after that, I became a big fan of hers.","앤젤리나 졸리는 라라 역에 완벽했고, 그 후 그녀의 열렬한 팬이 되었습니다.","앤젤리나 졸리 워즈 퍼펙트 애즈 라라, 앤 애프터 댓, 아이 비케임 어 빅 팬 어브 허즈."],["I watched the sequel as soon as it came out, and I liked it even more.","속편이 나오자마자 봤는데 더 좋았습니다.","아이 와치트 더 씨퀄 애즈 쑨 애즈 잇 케임 아웃, 앤 아이 라익트 잇 이븐 모어."],["It's memorable because it reminds me of my younger days, when I was full of energy.","에너지가 넘치던 젊은 시절이 떠올라서 기억에 남습니다.","잇츠 메모러블 비코즈 잇 리마인즈 미 어브 마이 영거 데이즈, 웬 아이 워즈 풀 어브 에너지."]],"AL":[["If I had to pick the movie I remember the most, it would definitely be the Tomb Raider series.","가장 기억에 남는 영화를 하나 꼽으라면 단연 툼레이더 시리즈입니다.","이프 아이 해드 투 픽 더 무비 아이 리멤버 더 모스트, 잇 우드 데피니틀리 비 더 툼 레이더 시리즈."],["For those who haven't seen it, it follows Lara Croft, a fearless adventurer who travels the world searching for ancient treasures.","안 본 분들을 위해 말하자면, 고대 보물을 찾아 세계를 누비는 겁 없는 모험가 라라 크로프트의 이야기입니다.","포 도즈 후 해븐트 씬 잇, 잇 팔로우즈 라라 크로프트, 어 피어리스 어드벤처러 후 트래블즈 더 월드 써칭 포 에인션트 트레져즈."],["I first saw it in a packed theater in my early thirties, and I still remember how the whole audience cheered during the fight scenes.","30대 초반에 꽉 찬 극장에서 처음 봤는데, 액션 장면에서 관객 전체가 환호하던 게 아직도 기억납니다.","아이 퍼스트 쏘 잇 인 어 팩트 띠어터 인 마이 얼리 써티즈, 앤 아이 스틸 리멤버 하우 더 호울 오디언스 치어드 듀링 더 파잇 씬즈."],["Back then, it was pretty rare to see a female action hero, so Angelina Jolie's performance felt really fresh.","그때는 여성 액션 영웅이 꽤 드물어서 앤젤리나 졸리의 연기가 정말 신선했습니다.","백 덴, 잇 워즈 프리티 레어 투 씨 어 피메일 액션 히어로, 쏘 앤젤리나 졸리즈 퍼포먼스 펠트 륄리 프레쉬."],["I was so hooked that I saw the sequel on opening day.","너무 빠져서 속편은 개봉 첫날 봤습니다.","아이 워즈 쏘 훅트 댓 아이 쏘 더 씨퀄 온 오프닝 데이."],["Years later, I even rewatched the whole series with my son, and it was fun to see him get just as excited as I did.","몇 년 뒤엔 아들과 시리즈 전체를 다시 봤는데, 아들이 저만큼 신나 하는 걸 보는 게 즐거웠습니다.","이어즈 레이러, 아이 이븐 리와치트 더 호울 시리즈 윗 마이 썬, 앤 잇 워즈 펀 투 씨 힘 겟 저스트 애즈 익싸이티드 애즈 아이 딧."],["Looking back, the series isn't just an action movie to me; it's a piece of my younger days.","돌이켜 보면 그 시리즈는 제게 단순한 액션 영화가 아니라 젊은 날의 한 조각입니다.","루킹 백, 더 시리즈 이즌트 저스트 언 액션 무비 투 미; 잇츠 어 피스 어브 마이 영거 데이즈."],["Whenever it's on TV, I can't help but watch it again.","TV에서 나올 때마다 다시 보지 않을 수 없습니다.","웬에버 잇츠 온 티비, 아이 캔트 헬프 벗 와치 잇 어겐."]]},"cat":"sv"},{"id":"recent","name":"최근 본 영화","q":"Tell me about a movie you saw recently. What was it about, and how did you feel after watching it?","qko":"최근에 본 영화에 대해 말해 주세요. 어떤 내용이었고, 보고 나서 어떤 느낌이었나요?","pat":[["be based on ~","~을 바탕으로 하다"],["What I found most touching was ~","가장 감동적이었던 것은 ~"],["be worth -ing","~할 가치가 있다"]],"L":{"IM1":[["I saw a Korean movie recently.","최근에 한국 영화를 봤습니다.","아이 쏘 어 코리안 무비 리슨틀리."],["It is about a young king.","어린 왕에 관한 영화입니다.","잇 이즈 어바웃 어 영 킹."],["The story was very sad.","이야기가 아주 슬펐습니다.","더 스토리 워즈 베리 쌔드."]],"IM3":[["Recently, I saw a Korean movie called \"The Man Who Lives with the King.\"","최근에 '왕과 사는 남자'라는 한국 영화를 봤습니다.","리슨틀리, 아이 쏘 어 코리안 무비 콜드 \"더 맨 후 리브즈 윗 더 킹.\""],["It is a historical movie about King Danjong, a young king who lost his throne.","왕위를 빼앗긴 어린 왕 단종에 관한 사극 영화입니다.","잇 이즈 어 히스토리컬 무비 어바웃 킹 단종, 어 영 킹 후 로스트 히즈 쓰론."],["I watched it with my wife at the CGV in Lake Park.","아내와 호수공원 CGV에서 봤습니다.","아이 와치트 잇 윗 마이 와이프 앳 더 씨지비 인 레이크 팍."],["The ending was so sad that we both cried.","결말이 너무 슬퍼서 우리 둘 다 울었습니다.","디 엔딩 워즈 쏘 쌔드 댓 위 보쓰 크라이드."]],"IH":[["The most recent Korean movie I saw is \"The Man Who Lives with the King.\"","가장 최근에 본 한국 영화는 '왕과 사는 남자'입니다.","더 모스트 리슨트 코리안 무비 아이 쏘 이즈 \"더 맨 후 리브즈 윗 더 킹.\""],["It's a historical drama about King Danjong, who became king at the age of twelve but was forced to give up his throne.","12살에 왕이 되었지만 왕위를 내놓아야 했던 단종에 관한 사극입니다.","잇츠 어 히스토리컬 드라마 어바웃 킹 단종, 후 비케임 킹 앳 디 에이지 어브 트웰브 벗 워즈 포스트 투 기브 업 히즈 쓰론."],["He was sent into exile in a remote village in Yeongwol, and the movie shows his friendship with the village chief who looked after him.","그는 영월의 외딴 마을로 유배되었고, 영화는 그를 돌본 촌장과의 우정을 보여 줍니다.","히 워즈 쎈트 인투 엑자일 인 어 리모트 빌리지 인 영월, 앤 더 무비 쇼즈 히즈 프렌쉽 윗 더 빌리지 치프 후 룩트 애프터 힘."],["The actors were amazing, especially Yoo Hae-jin, who played the village chief.","배우들 연기가 대단했는데, 특히 촌장 역의 유해진이 그랬습니다.","디 액터즈 워 어메이징, 이스페셜리 유해진, 후 플레이드 더 빌리지 치프."],["The ending was so heartbreaking that my wife and I couldn't stop crying.","결말이 너무 가슴 아파서 아내와 저는 눈물을 멈출 수가 없었습니다.","디 엔딩 워즈 쏘 하트브레이킹 댓 마이 와이프 앤 아이 쿠든 스탑 크라잉."],["Even though it was sad, I think it's a movie everyone should see.","슬펐지만 모두가 봐야 할 영화라고 생각합니다.","이븐 도우 잇 워즈 쌔드, 아이 띵크 잇츠 어 무비 에브리원 슈드 씨."]],"AL":[["The last Korean movie I saw was \"The Man Who Lives with the King,\" and honestly, I'm still thinking about it.","마지막으로 본 한국 영화는 '왕과 사는 남자'인데, 솔직히 아직도 그 영화 생각이 납니다.","더 래스트 코리안 무비 아이 쏘 워즈 \"더 맨 후 리브즈 윗 더 킹,\" 앤 아너슬리, 아임 스틸 띵킹 어바웃 잇."],["It's based on the true story of King Danjong, who took the throne at just twelve but lost it to his own uncle.","불과 12살에 왕위에 올랐지만 삼촌에게 빼앗긴 단종의 실화를 바탕으로 합니다.","잇츠 베이스트 온 더 트루 스토리 어브 킹 단종, 후 툭 더 쓰론 앳 저스트 트웰브 벗 로스트 잇 투 히즈 오운 엉클."],["After that, he was exiled to a small village in Yeongwol, where a humble village chief was put in charge of watching over him.","그 후 영월의 작은 마을로 유배되었고, 그곳에서 소박한 촌장이 그를 지키는 일을 맡게 됩니다.","애프터 댓, 히 워즈 에그자일드 투 어 스몰 빌리지 인 영월, 웨어 어 험블 빌리지 치프 워즈 풋 인 차지 어브 와칭 오버 힘."],["What I found most touching was how their relationship slowly changed from duty into something like family.","가장 감동적이었던 건 두 사람의 관계가 의무에서 가족 같은 것으로 서서히 바뀌어 가는 모습이었습니다.","왓 아이 파운드 모스트 터칭 워즈 하우 데어 릴레이션쉽 슬로울리 체인지드 프럼 듀티 인투 썸띵 라익 패밀리."],["Yoo Hae-jin and Park Ji-hoon were incredible, and there were moments when the whole theater went completely silent.","유해진과 박지훈의 연기는 대단했고, 극장 전체가 완전히 조용해지는 순간들이 있었습니다.","유해진 앤 박지훈 워 인크레더블, 앤 데어 워 모먼츠 웬 더 호울 띠어터 웬트 컴플리틀리 싸일런트."],["Since we already know how Danjong's story ends, the sadness kept building, and by the end, my wife and I were both in tears.","단종의 이야기가 어떻게 끝나는지 이미 알기에 슬픔이 계속 쌓였고, 마지막엔 아내와 저 둘 다 눈물을 흘렸습니다.","씬스 위 올레디 노우 하우 단종즈 스토리 엔즈, 더 쌔드니스 켑트 빌딩, 앤 바이 디 엔드, 마이 와이프 앤 아이 워 보쓰 인 티어즈."],["It also made me think about my own kids, because Danjong was even younger than them when he went through all that.","단종이 그 모든 일을 겪을 때 제 아이들보다도 어렸기에 제 아이들 생각도 났습니다.","잇 올쏘 메이드 미 띵크 어바웃 마이 오운 키즈, 비코즈 단종 워즈 이븐 영거 댄 뎀 웬 히 웬트 쓰루 올 댓."],["It was one of the saddest movies I've ever seen, but it was absolutely worth watching.","제가 본 가장 슬픈 영화 중 하나였지만, 정말 볼 가치가 있었습니다.","잇 워즈 원 어브 더 쌔디스트 무비즈 아이브 에버 씬, 벗 잇 워즈 앱설루틀리 워쓰 와칭."]]},"cat":"sv"},{"id":"parkgolf","name":"관심사: 파크골프","q":"Tell me about a new hobby or activity you have become interested in recently. Why are you interested in it?","qko":"최근 관심이 생긴 새로운 취미나 활동에 대해 말해 주세요. 왜 관심이 생겼나요?","pat":[["I've become interested in ~","~에 관심이 생겼다"],["What appeals to me is that ~","내게 끌리는 점은 ~이다"],["I'm planning to ~","~할 계획이다"]],"L":{"IM1":[["These days, I am interested in park golf.","요즘 파크골프에 관심이 있습니다.","디즈 데이즈, 아이 앰 인터레스티드 인 팍 골프."],["It is like golf, but it is easier.","골프와 비슷하지만 더 쉽습니다.","잇 이즈 라익 골프, 벗 잇 이즈 이지어."],["I want to try it with my wife.","아내와 같이 해 보고 싶습니다.","아이 원투 트라이 잇 윗 마이 와이프."]],"IM3":[["Recently, I have become interested in park golf.","최근 파크골프에 관심이 생겼습니다.","리슨틀리, 아이 해브 비컴 인터레스티드 인 팍 골프."],["It is a small version of golf that you play in a park with one club and a plastic ball.","공원에서 채 하나와 플라스틱 공으로 하는 작은 골프입니다.","잇 이즈 어 스몰 버젼 어브 골프 댓 유 플레이 인 어 팍 윗 원 클럽 앤 어 플라스틱 볼."],["It is cheap and not too hard, so it is popular with people my age.","비용이 저렴하고 너무 어렵지 않아서 제 또래에게 인기가 많습니다.","잇 이즈 칩 앤 낫 투 하드, 쏘 잇 이즈 파퓰러 윗 피플 마이 에이지."],["I am planning to take a lesson with my wife soon.","곧 아내와 함께 레슨을 받을 계획입니다.","아이 앰 플래닝 투 테익 어 레슨 윗 마이 와이프 쑨."]],"IH":[["These days, I've become really interested in park golf.","요즘 파크골프에 관심이 많이 생겼습니다.","디즈 데이즈, 아이브 비컴 륄리 인터레스티드 인 팍 골프."],["It's like a mini version of golf that you play on a short course in a park, using just one club and a plastic ball.","공원의 짧은 코스에서 채 하나와 플라스틱 공만으로 하는 미니 골프 같은 것입니다.","잇츠 라익 어 미니 버젼 어브 골프 댓 유 플레이 온 어 쇼트 코스 인 어 팍, 유징 저스트 원 클럽 앤 어 플라스틱 볼."],["A few of my friends started playing it last year, and they keep telling me how fun it is.","친구 몇 명이 작년에 시작했는데, 계속 재밌다고 얘기합니다.","어 퓨 어브 마이 프렌즈 스타티드 플레잉 잇 래스트 이어, 앤 데이 킵 텔링 미 하우 펀 잇 이즈."],["What I like about it is that it's much cheaper and easier on the body than regular golf.","좋은 점은 일반 골프보다 훨씬 저렴하고 몸에 무리가 덜 간다는 것입니다.","왓 아이 라익 어바웃 잇 이즈 댓 잇츠 머치 치퍼 앤 이지어 온 더 바디 댄 레귤러 골프."],["Plus, you walk a lot while you play, so it goes well with my walking routine.","게다가 치는 동안 많이 걸어서 제 산책 습관과도 잘 맞습니다.","플러스, 유 웍 어 랏 와일 유 플레이, 쏘 잇 고즈 웰 윗 마이 워킹 루틴."],["I'm planning to take a few lessons with my wife this fall.","올가을 아내와 레슨을 몇 번 받아 볼 계획입니다.","아임 플래닝 투 테익 어 퓨 레슨즈 윗 마이 와이프 디스 폴."]],"AL":[["Lately, I've developed a new interest that I never expected: park golf.","요즘 전혀 예상하지 못한 새로운 관심사가 생겼는데, 바로 파크골프입니다.","레잇리, 아이브 디벨롭트 어 뉴 인터레스트 댓 아이 네버 익스펙티드: 팍 골프."],["If you're not familiar with it, it's a simplified form of golf played on short courses in parks, with a single wooden club and a plastic ball.","잘 모르신다면, 공원의 짧은 코스에서 나무 채 하나와 플라스틱 공으로 하는 간소화된 골프입니다.","이프 유어 낫 퍼밀리어 윗 잇, 잇츠 어 심플리파이드 폼 어브 골프 플레이드 온 쇼트 코시즈 인 팍스, 윗 어 싱글 우든 클럽 앤 어 플라스틱 볼."],["To be honest, I used to think it was just a game for retirees, but I changed my mind after trying it once with some friends.","솔직히 예전엔 은퇴한 분들이나 하는 게임이라고 생각했는데, 친구들과 한 번 해 보고 생각이 바뀌었습니다.","투 비 아너스트, 아이 유스투 띵크 잇 워즈 저스트 어 게임 포 리타이어리즈, 벗 아이 체인지드 마이 마인드 애프터 트라잉 잇 원스 윗 썸 프렌즈."],["It's surprisingly competitive, and getting the ball into the hole takes more skill than it looks.","생각보다 승부욕이 생기고, 공을 홀에 넣는 데 보기보다 기술이 필요합니다.","잇츠 서프라이징리 컴페티티브, 앤 게링 더 볼 인투 더 홀 테익스 모어 스킬 댄 잇 룩스."],["What really appeals to me is that it combines walking, fresh air, and social time, which are exactly what I need in my fifties.","정말 끌리는 점은 걷기, 맑은 공기, 사람들과의 시간을 모두 합쳐 준다는 것인데, 50대인 제게 딱 필요한 것들입니다.","왓 륄리 어필즈 투 미 이즈 댓 잇 컴바인즈 워킹, 프레쉬 에어, 앤 쏘셜 타임, 위치 아 이그잭틀리 왓 아이 니드 인 마이 피프티즈."],["It's also much easier on my back and knees than regular golf, and it costs almost nothing.","일반 골프보다 허리와 무릎에 훨씬 무리가 덜 가고, 비용도 거의 들지 않습니다.","잇츠 올쏘 머치 이지어 온 마이 백 앤 니즈 댄 레귤러 골프, 앤 잇 코스츠 올모스트 낫띵."],["My wife and I are planning to sign up for lessons this fall so we can play together on weekends.","아내와 저는 주말에 함께 칠 수 있도록 올가을 레슨에 등록할 계획입니다.","마이 와이프 앤 아이 아 플래닝 투 싸인 업 포 레슨즈 디스 폴 쏘 위 캔 플레이 투게더 온 위켄즈."],["Who knows, it might become the hobby I enjoy most after I retire.","누가 알겠어요, 은퇴 후에 가장 즐기는 취미가 될지도 모르죠.","후 노우즈, 잇 마잇 비컴 더 하비 아이 인조이 모스트 애프터 아이 리타이어."]]},"cat":"sv"},{"id":"travel_kr","name":"국내 여행","q":"Tell me about the places you have traveled to in Korea. Where did you go, and what did you like about each place?","qko":"국내에서 여행한 곳들에 대해 말해 주세요. 어디에 갔고, 각각 무엇이 좋았나요?","pat":[["including A, B, and C","A, B, C를 포함해"],["Each place has its own charm.","곳마다 나름의 매력이 있다"],["~ was a different story","~는 얘기가 달랐다"]],"L":{"IM1":[["I traveled to many places in Korea.","한국의 여러 곳을 여행했습니다.","아이 트래블드 투 매니 플레이시즈 인 코리아."],["I went to Busan, Jeju Island, and Sokcho.","부산, 제주도, 속초에 갔습니다.","아이 웬트 투 부산, 제주 아일랜드, 앤 속초."],["I also climbed Chiaksan Mountain.","치악산도 올랐습니다.","아이 올쏘 클라임드 치악산 마운튼."]],"IM3":[["I have traveled to many places in Korea with my family.","가족과 한국의 여러 곳을 여행했습니다.","아이 해브 트래블드 투 매니 플레이시즈 인 코리아 윗 마이 패밀리."],["In Busan, we enjoyed the beaches and fresh seafood.","부산에서는 해변과 신선한 해산물을 즐겼습니다.","인 부산, 위 인조이드 더 비치즈 앤 프레쉬 씨푸드."],["Jeju Island was beautiful, and Sokcho had a great view of the sea.","제주도는 아름다웠고, 속초는 바다 경치가 멋졌습니다.","제주 아일랜드 워즈 뷰티풀, 앤 속초 해드 어 그레잇 뷰 어브 더 씨."],["I also hiked Chiaksan Mountain, and it was hard but fun.","치악산 등산도 했는데 힘들었지만 재미있었습니다.","아이 올쏘 하익트 치악산 마운튼, 앤 잇 워즈 하드 벗 펀."]],"IH":[["I've traveled to quite a few places in Korea, including Busan, Jeju Island, Sokcho, and Chiaksan Mountain.","부산, 제주도, 속초, 치악산 등 국내 꽤 많은 곳을 여행했습니다.","아이브 트래블드 투 콰잇 어 퓨 플레이시즈 인 코리아, 인클루딩 부산, 제주 아일랜드, 속초, 앤 치악산 마운튼."],["Busan is a lively city by the sea, so we spent our time on the beach and at the fish market.","부산은 바닷가의 활기찬 도시라 해변과 수산시장에서 시간을 보냈습니다.","부산 이즈 어 라이블리 시티 바이 더 씨, 쏘 위 스펜트 아워 타임 온 더 비치 앤 앳 더 피쉬 마킷."],["Jeju Island is famous for its nature, and driving along the coast was really relaxing.","제주도는 자연으로 유명한데, 해안을 따라 드라이브하는 게 정말 편안했습니다.","제주 아일랜드 이즈 페이머스 포 잇츠 네이처, 앤 드라이빙 얼롱 더 코스트 워즈 륄리 릴랙싱."],["Sokcho is on the east coast, and I loved the fresh seafood and the view of the ocean.","속초는 동해안에 있는데, 신선한 해산물과 바다 풍경이 정말 좋았습니다.","속초 이즈 온 디 이스트 코스트, 앤 아이 러브드 더 프레쉬 씨푸드 앤 더 뷰 어브 디 오션."],["Chiaksan Mountain was the most challenging trip, because the trail is steep, but the view from the top was worth it.","치악산은 등산로가 가팔라서 가장 힘든 여행이었지만 정상 풍경은 그럴 가치가 있었습니다.","치악산 마운튼 워즈 더 모스트 챌린징 트립, 비코즈 더 트레일 이즈 스팁, 벗 더 뷰 프럼 더 탑 워즈 워쓰 잇."],["Each place has its own charm, and that's why I enjoy traveling in Korea.","곳마다 나름의 매력이 있어서 국내 여행을 즐깁니다.","이치 플레이스 해즈 잇츠 오운 참, 앤 댓츠 와이 아이 인조이 트래블링 인 코리아."]],"AL":[["Over the years, I've been lucky enough to travel all over Korea, from Busan and Jeju Island to Sokcho and Chiaksan Mountain.","그동안 운 좋게도 부산과 제주도부터 속초, 치악산까지 전국을 여행했습니다.","오버 디 이어즈, 아이브 빈 럭키 이너프 투 트래블 올 오버 코리아, 프럼 부산 앤 제주 아일랜드 투 속초 앤 치악산 마운튼."],["What I love about traveling in Korea is that each region has a completely different personality.","국내 여행의 좋은 점은 지역마다 완전히 다른 개성이 있다는 겁니다.","왓 아이 러브 어바웃 트래블링 인 코리아 이즈 댓 이치 리젼 해즈 어 컴플리틀리 디퍼런트 퍼스널리티."],["Busan is energetic and full of life, with its crowded beaches, busy fish markets, and amazing night views.","부산은 붐비는 해변, 바쁜 수산시장, 멋진 야경으로 활기가 넘칩니다.","부산 이즈 에너제틱 앤 풀 어브 라이프, 윗 잇츠 크라우디드 비치즈, 비지 피쉬 마킷츠, 앤 어메이징 나잇 뷰즈."],["Jeju, on the other hand, feels slow and peaceful, and just driving along the coastal road makes me forget about work.","반면 제주는 느리고 평화로워서 해안도로를 달리기만 해도 일을 잊게 됩니다.","제주, 온 디 아더 핸드, 필즈 슬로우 앤 피스풀, 앤 저스트 드라이빙 얼롱 더 코스털 로드 메익스 미 포겟 어바웃 웍."],["Sokcho is my go-to place for seafood, and there's nothing better than eating fresh raw fish while looking out at the East Sea.","속초는 해산물 먹으러 가는 곳인데, 동해를 바라보며 먹는 싱싱한 회만 한 게 없습니다.","속초 이즈 마이 고 투 플레이스 포 씨푸드, 앤 데어즈 낫띵 베러 댄 이팅 프레쉬 로 피쉬 와일 루킹 아웃 앳 디 이스트 씨."],["Chiaksan was a different story; the trail was so steep that I almost gave up halfway, but reaching the top was incredibly rewarding.","치악산은 얘기가 달랐습니다. 길이 너무 가팔라 중간에 포기할 뻔했지만 정상에 오르니 정말 뿌듯했습니다.","치악산 워즈 어 디퍼런트 스토리; 더 트레일 워즈 쏘 스팁 댓 아이 올모스트 게이브 업 해프웨이, 벗 리칭 더 탑 워즈 인크레더블리 리워딩."],["Honestly, these days I prefer relaxing trips over hiking, but that climb is still one of my proudest memories.","솔직히 요즘은 등산보다 편한 여행이 좋지만, 그 등반은 여전히 가장 뿌듯한 기억 중 하나입니다.","아너슬리, 디즈 데이즈 아이 프리퍼 릴랙싱 트립스 오버 하이킹, 벗 댓 클라임 이즈 스틸 원 어브 마이 프라우디스트 메모리즈."],["For me, traveling in Korea is the easiest way to recharge without spending too much time or money.","제게 국내 여행은 시간과 돈을 많이 들이지 않고 재충전하는 가장 쉬운 방법입니다.","포 미, 트래블링 인 코리아 이즈 디 이지스트 웨이 투 리차지 위다웃 스펜딩 투 머치 타임 오어 머니."]]},"cat":"sv"},{"id":"travel_abroad","name":"해외 여행: 보라카이","q":"Tell me about a memorable trip you took overseas. Where did you go, and what made it special?","qko":"기억에 남는 해외여행에 대해 말해 주세요. 어디에 갔고, 무엇이 특별했나요?","pat":[["without a second thought","망설임 없이"],["The only downside was ~","유일한 단점은 ~였다"],["What made ~ special was ~","~를 특별하게 만든 건 ~였다"]],"L":{"IM1":[["I like traveling abroad.","해외여행을 좋아합니다.","아이 라익 트래블링 어브로드."],["My best trip was to Boracay in the Philippines.","최고의 여행은 필리핀 보라카이였습니다.","마이 베스트 트립 워즈 투 보라카이 인 더 필리핀즈."],["The hotel was nice, and the water sports were fun.","호텔이 좋았고 해양 스포츠가 재밌었습니다.","더 호텔 워즈 나이스, 앤 더 워러 스포츠 워 펀."]],"IM3":[["I have traveled to many countries in Europe and Southeast Asia.","유럽과 동남아의 많은 나라를 여행했습니다.","아이 해브 트래블드 투 매니 컨트리즈 인 유럽 앤 사우쓰이스트 에이쟈."],["My most memorable trip was to Boracay in the Philippines.","가장 기억에 남는 여행은 필리핀 보라카이였습니다.","마이 모스트 메모러블 트립 워즈 투 보라카이 인 더 필리핀즈."],["Our resort was very nice, and water sports like snorkeling were really fun.","리조트가 아주 좋았고, 스노클링 같은 해양 스포츠가 정말 재밌었습니다.","아워 리조트 워즈 베리 나이스, 앤 워러 스포츠 라익 스노클링 워 륄리 펀."],["I don't like moving around a lot, so I liked staying in one place for a long time.","많이 움직이는 걸 좋아하지 않아서 한 곳에 오래 머물 수 있는 게 좋았습니다.","아이 돈 라익 무빙 어라운드 어 랏, 쏘 아이 라익트 스테잉 인 원 플레이스 포 어 롱 타임."]],"IH":[["I've been to quite a few countries, mostly in Europe and Southeast Asia, but my favorite trip was to Boracay in the Philippines.","주로 유럽과 동남아의 꽤 많은 나라에 가 봤지만, 가장 좋았던 여행은 필리핀 보라카이였습니다.","아이브 빈 투 콰잇 어 퓨 컨트리즈, 모스틀리 인 유럽 앤 사우쓰이스트 에이쟈, 벗 마이 페이버릿 트립 워즈 투 보라카이 인 더 필리핀즈."],["Boracay is a small island famous for its white sand beaches and clear blue water.","보라카이는 하얀 모래 해변과 맑고 푸른 바다로 유명한 작은 섬입니다.","보라카이 이즈 어 스몰 아일랜드 페이머스 포 잇츠 와잇 샌드 비치즈 앤 클리어 블루 워러."],["Our resort was right on the beach, and the room and the service were excellent.","리조트가 해변 바로 앞이었고, 방과 서비스가 훌륭했습니다.","아워 리조트 워즈 라잇 온 더 비치, 앤 더 룸 앤 더 써비스 워 엑설런트."],["The best part was the water sports, like snorkeling and parasailing, which were really exciting.","가장 좋았던 건 스노클링과 패러세일링 같은 해양 스포츠였는데, 정말 신났습니다.","더 베스트 파트 워즈 더 워러 스포츠, 라익 스노클링 앤 패러쎄일링, 위치 워 륄리 익싸이팅."],["Since I don't like moving around too much on vacation, it was perfect to stay in one place and just relax.","휴가 때 너무 많이 움직이는 걸 좋아하지 않아서, 한 곳에 머물며 쉬기에 완벽했습니다.","씬스 아이 돈 라익 무빙 어라운드 투 머치 온 베케이션, 잇 워즈 퍼펙트 투 스테이 인 원 플레이스 앤 저스트 릴랙스."],["The only downside was that there's no airport on the island, so we had to take a boat, but everything else was great.","유일한 단점은 섬에 공항이 없어 배를 타야 했던 것이지만, 나머지는 다 좋았습니다.","디 온리 다운사이드 워즈 댓 데어즈 노 에어포트 온 디 아일랜드, 쏘 위 해드 투 테익 어 보트, 벗 에브리띵 엘스 워즈 그레잇."]],"AL":[["I've been fortunate enough to travel quite a lot, mostly around Europe and Southeast Asia.","운 좋게도 주로 유럽과 동남아를 꽤 많이 여행했습니다.","아이브 빈 포처닛 이너프 투 트래블 콰잇 어 랏, 모스틀리 어라운드 유럽 앤 사우쓰이스트 에이쟈."],["But if you asked me which trip I'd love to repeat, I'd say Boracay in the Philippines without a second thought.","하지만 다시 가고 싶은 여행을 묻는다면 망설임 없이 필리핀 보라카이라고 할 겁니다.","벗 이프 유 애스크트 미 위치 트립 아이드 러브 투 리핏, 아이드 쎄이 보라카이 인 더 필리핀즈 위다웃 어 세컨드 쏫."],["In Europe, we were always rushing from one city to the next, which was interesting but honestly exhausting.","유럽에서는 늘 이 도시 저 도시로 서둘러 이동했는데, 흥미롭긴 했지만 솔직히 지쳤습니다.","인 유럽, 위 워 올웨이즈 러싱 프럼 원 시티 투 더 넥스트, 위치 워즈 인터레스팅 벗 아너슬리 이그조스팅."],["Boracay was the complete opposite, since we stayed at one beachfront resort the whole time and never had to pack and unpack.","보라카이는 정반대였는데, 내내 해변 리조트 한 곳에 머물러 짐을 싸고 풀 필요가 없었습니다.","보라카이 워즈 더 컴플리트 아퍼짓, 씬스 위 스테이드 앳 원 비치프런트 리조트 더 호울 타임 앤 네버 해드 투 팩 앤 언팩."],["The resort was fantastic, with a quiet pool, friendly staff, and a view of the sunset right from our balcony.","리조트는 조용한 수영장, 친절한 직원, 발코니에서 바로 보이는 석양까지 환상적이었습니다.","더 리조트 워즈 팬태스틱, 윗 어 콰이엇 풀, 프렌들리 스태프, 앤 어 뷰 어브 더 썬쎗 라잇 프럼 아워 발커니."],["What made the trip really special, though, was the water sports; parasailing over the turquoise sea was an experience I'll never forget.","하지만 여행을 정말 특별하게 만든 건 해양 스포츠였고, 청록빛 바다 위로 패러세일링을 한 건 절대 잊지 못할 경험입니다.","왓 메이드 더 트립 륄리 스페셜, 도우, 워즈 더 워러 스포츠; 패러쎄일링 오버 더 터쿼이즈 씨 워즈 언 익스피리언스 아일 네버 포겟."],["The only hassle was getting there, because there's no airport on the island, so we had to take a boat with all our luggage.","유일하게 번거로웠던 건 가는 길이었는데, 섬에 공항이 없어서 짐을 다 들고 배를 타야 했습니다.","디 온리 해슬 워즈 게링 데어, 비코즈 데어즈 노 에어포트 온 디 아일랜드, 쏘 위 해드 투 테익 어 보트 윗 올 아워 러기지."],["But once we arrived, it was pure relaxation, and it made me realize that the best vacations are the ones where you don't have to move much.","하지만 도착하고 나선 온전한 휴식이었고, 최고의 휴가는 많이 움직이지 않아도 되는 휴가라는 걸 깨달았습니다.","벗 원스 위 어라이브드, 잇 워즈 퓨어 릴랙쎄이션, 앤 잇 메이드 미 리얼라이즈 댓 더 베스트 베케이션즈 아 더 원즈 웨어 유 돈 해브 투 무브 머치."]]},"cat":"sv"},{"id":"rp_ask","cat":"rp","name":"롤플레이 1: 질문하기","q":"I also enjoy watching movies. Ask me three or four questions about the movies I like.","qko":"저(에바)도 영화를 좋아해요. 제가 좋아하는 영화에 대해 서너 가지 질문을 해 보세요.","tip":"인사 → 질문 3~4개 → 감사 인사로 끝내기. 질문은 What/Where/Who/How often처럼 의문사를 바꿔 가며 하세요.","pat":[["I was wondering if ~","~인지 궁금했어요 (공손한 질문)"],["Do you prefer A or B?","A와 B 중 뭘 선호하세요?"],["I'd love to hear ~","~을 듣고 싶어요"]],"L":{"IM1":[["Hi, Eva. I have some questions.","안녕하세요, 에바. 질문이 있어요.","하이, 에바. 아이 해브 썸 퀘스천즈."],["What movies do you like?","어떤 영화를 좋아하세요?","왓 무비즈 두 유 라익?"],["Where do you watch movies?","어디서 영화를 보세요?","웨어 두 유 와치 무비즈?"]],"IM3":[["Hi, Eva. I heard you like movies too, so I'd like to ask you some questions.","안녕하세요, 에바. 영화를 좋아하신다고 들어서 몇 가지 여쭤보고 싶어요.","하이, 에바. 아이 허드 유 라익 무비즈 투, 쏘 아이드 라익 투 애스크 유 썸 퀘스천즈."],["What kind of movies do you like the most?","어떤 영화를 가장 좋아하세요?","왓 카인드 어브 무비즈 두 유 라익 더 모스트?"],["How often do you go to the movie theater?","극장에 얼마나 자주 가세요?","하우 오픈 두 유 고 투 더 무비 띠어터?"],["Who do you usually watch movies with?","보통 누구와 영화를 보세요?","후 두 유 유쥬얼리 와치 무비즈 윗?"]],"IH":[["Hi, Eva. I heard you're a big movie fan too, so I have a few questions for you.","안녕하세요, 에바. 영화를 무척 좋아하신다고 들어서 몇 가지 질문이 있어요.","하이, 에바. 아이 허드 유어 어 빅 무비 팬 투, 쏘 아이 해브 어 퓨 퀘스천즈 포 유."],["First, what kind of movies do you enjoy watching? Do you like action movies like I do?","먼저 어떤 영화를 즐겨 보세요? 저처럼 액션 영화 좋아하세요?","퍼스트, 왓 카인드 어브 무비즈 두 유 인조이 와칭? 두 유 라익 액션 무비즈 라익 아이 두?"],["Second, do you usually go to the theater, or do you prefer watching movies at home?","둘째, 보통 극장에 가세요, 아니면 집에서 보는 걸 선호하세요?","세컨드, 두 유 유쥬얼리 고 투 더 띠어터, 오어 두 유 프리퍼 와칭 무비즈 앳 홈?"],["Who do you usually go with, and what do you do after the movie?","보통 누구와 가고, 영화 끝나고 뭘 하세요?","후 두 유 유쥬얼리 고 윗, 앤 왓 두 유 두 애프터 더 무비?"],["Lastly, what's the best movie you've seen recently?","마지막으로 최근에 본 최고의 영화는 뭔가요?","래스틀리, 왓츠 더 베스트 무비 유브 씬 리슨틀리?"],["I'd love to hear your recommendations. Thank you!","추천도 듣고 싶어요. 감사합니다!","아이드 러브 투 히어 유어 레커멘데이션즈. 땡큐!"]],"AL":[["Hi, Eva. It's nice to hear that you enjoy movies too. I'm curious about your taste, so let me ask you a few questions.","안녕하세요, 에바. 영화를 좋아하신다니 반갑네요. 취향이 궁금해서 몇 가지 여쭤볼게요.","하이, 에바. 잇츠 나이스 투 히어 댓 유 인조이 무비즈 투. 아임 큐리어스 어바웃 유어 테이스트, 쏘 렛 미 애스크 유 어 퓨 퀘스천즈."],["To start with, what genre do you enjoy the most, and has your taste changed over the years?","우선 어떤 장르를 가장 좋아하고, 취향이 세월 따라 바뀌었나요?","투 스타트 윗, 왓 장르 두 유 인조이 더 모스트, 앤 해즈 유어 테이스트 체인지드 오버 디 이어즈?"],["Also, do you prefer the big screen at a theater, or are you more of a stay-at-home, streaming kind of person?","또 극장의 큰 화면을 좋아하세요, 아니면 집에서 스트리밍으로 보는 편인가요?","올쏘, 두 유 프리퍼 더 빅 스크린 앳 어 띠어터, 오어 아 유 모어 어브 어 스테이 앳 홈, 스트리밍 카인드 어브 퍼슨?"],["If you go to the theater, is there a particular one you like, and why?","극장에 가신다면 특별히 좋아하는 곳이 있고, 이유는 뭔가요?","이프 유 고 투 더 띠어터, 이즈 데어 어 퍼티큘러 원 유 라익, 앤 와이?"],["I'm also wondering whether you've ever seen any Korean movies.","한국 영화를 본 적이 있는지도 궁금해요.","아임 올쏘 원더링 웨더 유브 에버 씬 애니 코리안 무비즈."],["If you haven't, I'd highly recommend \"The Man Who Lives with the King,\" although it's a bit sad.","안 보셨다면 조금 슬프지만 '왕과 사는 남자'를 강력 추천해요.","이프 유 해븐트, 아이드 하일리 레커멘드 \"더 맨 후 리브즈 윗 더 킹,\" 올도우 잇츠 어 빗 쌔드."],["Lastly, what's one movie you could watch over and over again without getting bored?","마지막으로, 질리지 않고 계속 볼 수 있는 영화 한 편은 뭔가요?","래스틀리, 왓츠 원 무비 유 쿠드 와치 오버 앤 오버 어겐 위다웃 게링 보어드?"],["Thanks for answering. It's always fun to talk about movies with someone.","대답해 줘서 고마워요. 누군가와 영화 얘기하는 건 늘 즐겁네요.","땡스 포 앤써링. 잇츠 올웨이즈 펀 투 톡 어바웃 무비즈 윗 썸원."]]}},{"id":"rp_call","cat":"rp","name":"롤플레이 2: 정보 요청 전화","q":"You want to take park golf lessons. Call the park golf club and ask three or four questions to get the information you need.","qko":"파크골프 레슨을 받고 싶습니다. 파크골프 클럽에 전화해 필요한 정보를 얻기 위해 서너 가지 질문을 하세요.","tip":"자기소개와 전화 목적 → 질문 3~4개(시간·비용·준비물·등록) → 등록 방법 확인 후 감사 인사.","pat":[["I'm calling because ~","~해서 전화드렸어요"],["Could you tell me ~?","~를 알려 주시겠어요?"],["Would that be possible?","그게 가능할까요?"]],"L":{"IM1":[["Hello, I want to learn park golf.","안녕하세요, 파크골프를 배우고 싶어요.","헬로우, 아이 원투 런 팍 골프."],["How much is the lesson?","레슨비가 얼마예요?","하우 머치 이즈 더 레슨?"],["When is the class?","수업은 언제예요?","웬 이즈 더 클래스?"]],"IM3":[["Hello, I'm calling because I want to take park golf lessons.","안녕하세요, 파크골프 레슨을 받고 싶어서 전화드렸어요.","헬로우, 아임 콜링 비코즈 아이 원투 테익 팍 골프 레슨즈."],["Do you have classes for beginners on weekends?","주말에 초보자반이 있나요?","두 유 해브 클래시즈 포 비기너즈 온 위켄즈?"],["How much does it cost, and how long is each lesson?","비용은 얼마이고 한 번 레슨은 얼마나 걸리나요?","하우 머치 더즈 잇 코스트, 앤 하우 롱 이즈 이치 레슨?"],["Do I need to bring my own club?","채를 가져가야 하나요?","두 아이 니드 투 브링 마이 오운 클럽?"]],"IH":[["Hi, my name is Jace. I'm calling because my wife and I are interested in taking park golf lessons.","안녕하세요, 제이스입니다. 아내와 파크골프 레슨을 받고 싶어서 전화드렸어요.","하이, 마이 네임 이즈 제이스. 아임 콜링 비코즈 마이 와이프 앤 아이 아 인터레스티드 인 테이킹 팍 골프 레슨즈."],["We're complete beginners, so I was wondering if you have a class for beginners.","저희는 완전 초보라서 초보자반이 있는지 궁금했어요.","위어 컴플리트 비기너즈, 쏘 아이 워즈 원더링 이프 유 해브 어 클래스 포 비기너즈."],["Since we both work on weekdays, is there a class on Saturday or Sunday mornings?","둘 다 평일에 일해서요, 토요일이나 일요일 아침반이 있나요?","씬스 위 보쓰 웍 온 윅데이즈, 이즈 데어 어 클래스 온 쌔러데이 오어 썬데이 모닝즈?"],["Could you also tell me how much it costs for a month?","한 달에 얼마인지도 알려 주시겠어요?","쿠드 유 올쏘 텔 미 하우 머치 잇 코스츠 포 어 먼쓰?"],["Do we need to buy our own clubs, or can we rent them there?","채를 사야 하나요, 아니면 거기서 빌릴 수 있나요?","두 위 니드 투 바이 아워 오운 클럽즈, 오어 캔 위 렌트 뎀 데어?"],["Great, thank you. How can I sign up?","좋네요, 감사합니다. 어떻게 등록하면 되나요?","그레잇, 땡큐. 하우 캔 아이 싸인 업?"]],"AL":[["Hello, my name is Jace, and I'm calling to ask about your park golf lessons.","안녕하세요, 제이스라고 하는데요, 파크골프 레슨에 대해 여쭤보려고 전화드렸어요.","헬로우, 마이 네임 이즈 제이스, 앤 아임 콜링 투 애스크 어바웃 유어 팍 골프 레슨즈."],["My wife and I have never played before, but a few of our friends recommended your club, so we'd like to give it a try.","저희 부부는 쳐 본 적이 없는데, 친구들이 여기를 추천해서 한번 해 보고 싶어요.","마이 와이프 앤 아이 해브 네버 플레이드 비포, 벗 어 퓨 어브 아워 프렌즈 레커멘디드 유어 클럽, 쏘 위드 라익 투 기브 잇 어 트라이."],["First of all, do you offer a beginner course, and if so, how many sessions does it include?","우선 초보 과정이 있나요? 있다면 몇 회로 되어 있나요?","퍼스트 어브 올, 두 유 오퍼 어 비기너 코스, 앤 이프 쏘, 하우 매니 쎄션즈 더즈 잇 인클루드?"],["We both work full-time, so ideally we'd like a class on weekend mornings. Would that be possible?","둘 다 전일제로 일해서 가능하면 주말 오전반이면 좋겠어요. 가능할까요?","위 보쓰 웍 풀 타임, 쏘 아이디얼리 위드 라익 어 클래스 온 위켄드 모닝즈. 우드 댓 비 파서블?"],["I'd also like to know the total cost, and whether equipment rental is included in the price.","총비용과 장비 대여가 가격에 포함되는지도 알고 싶어요.","아이드 올쏘 라익 투 노우 더 토털 코스트, 앤 웨더 이큅먼트 렌털 이즈 인클루디드 인 더 프라이스."],["One more thing: since we're both in our fifties, is the practice fairly easy on the body?","하나 더요, 저희가 둘 다 50대라서 연습이 몸에 무리가 적은 편인가요?","원 모어 띵: 씬스 위어 보쓰 인 아워 피프티즈, 이즈 더 프랙티스 페얼리 이지 온 더 바디?"],["That sounds perfect. Could you tell me how to register, and whether we can sign up online?","딱 좋네요. 등록 방법과 온라인 신청이 가능한지 알려 주시겠어요?","댓 싸운즈 퍼펙트. 쿠드 유 텔 미 하우 투 레지스터, 앤 웨더 위 캔 싸인 업 온라인?"],["Thank you so much for your help. We're really looking forward to it.","도와주셔서 감사합니다. 정말 기대돼요.","땡큐 쏘 머치 포 유어 헬프. 위어 륄리 루킹 포워드 투 잇."]]}},{"id":"rp_problem","cat":"rp","name":"롤플레이 3: 문제 해결","q":"You have arrived at your resort, but there is a problem with your reservation. Explain the situation to the front desk and offer two or three alternatives.","qko":"리조트에 도착했는데 예약에 문제가 있습니다. 프런트에 상황을 설명하고 대안을 두세 가지 제시하세요.","tip":"문제 설명(무엇이, 언제, 증거) → 대안 2~3개(First/Second/Or) → 정중한 부탁으로 마무리.","pat":[["I'm afraid there's a problem with ~","죄송하지만 ~에 문제가 있어요"],["Another option would be to ~","다른 방법은 ~하는 거예요"],["I'd really appreciate it if you could ~","~해 주시면 정말 감사하겠어요"]],"L":{"IM1":[["Hi, I have a reservation, but there is a problem.","예약을 했는데 문제가 있어요.","하이, 아이 해브 어 레저베이션, 벗 데어 이즈 어 프라블럼."],["My name is not on the list.","제 이름이 명단에 없어요.","마이 네임 이즈 낫 온 더 리스트."],["Can I have another room, please?","다른 방을 받을 수 있을까요?","캔 아이 해브 어나더 룸, 플리즈?"]],"IM3":[["Hello, I booked an ocean-view room for five nights, but you said there is no reservation.","오션뷰 방을 5박 예약했는데 예약이 없다고 하시네요.","헬로우, 아이 북트 언 오션 뷰 룸 포 파이브 나잇츠, 벗 유 쎄드 데어 이즈 노 레저베이션."],["Here is my confirmation email. Please check it again.","여기 확인 메일이에요. 다시 확인해 주세요.","히어 이즈 마이 칸퍼메이션 이메일. 플리즈 첵 잇 어겐."],["If you don't have an ocean-view room, can you give me a different room tonight?","오션뷰 방이 없으면 오늘 밤 다른 방을 주실 수 있나요?","이프 유 돈 해브 언 오션 뷰 룸, 캔 유 기브 미 어 디퍼런트 룸 투나잇?"],["Or can you give me a discount?","아니면 할인해 주실 수 있나요?","오어 캔 유 기브 미 어 디스카운트?"]],"IH":[["Hi, I'm afraid there's a problem with my reservation.","죄송하지만 예약에 문제가 있는 것 같아요.","하이, 아임 어프레이드 데어즈 어 프라블럼 윗 마이 레저베이션."],["I booked an ocean-view room for five nights about two months ago, but you're telling me there's no record of it.","두 달쯤 전에 오션뷰 방을 5박 예약했는데, 기록이 없다고 하시네요.","아이 북트 언 오션 뷰 룸 포 파이브 나잇츠 어바웃 투 먼쓰 어고, 벗 유어 텔링 미 데어즈 노 레코드 어브 잇."],["Here's my confirmation email with the booking number, so could you please check again?","예약 번호가 있는 확인 메일이 여기 있으니 다시 확인해 주시겠어요?","히어즈 마이 칸퍼메이션 이메일 윗 더 부킹 넘버, 쏘 쿠드 유 플리즈 첵 어겐?"],["If there are no ocean-view rooms available, could you give us a different room tonight and move us tomorrow?","오션뷰 방이 없으면 오늘은 다른 방을 주시고 내일 옮겨 주실 수 있을까요?","이프 데어 아 노 오션 뷰 룸즈 어베일러블, 쿠드 유 기브 어스 어 디퍼런트 룸 투나잇 앤 무브 어스 투마로우?"],["Another option would be to upgrade us to a better room at no extra charge.","다른 방법은 추가 요금 없이 더 좋은 방으로 업그레이드해 주시는 거예요.","어나더 압션 우드 비 투 업그레이드 어스 투 어 베러 룸 앳 노 엑스트라 차지."],["We came a long way by plane and boat, so I'd really appreciate your help.","비행기와 배로 먼 길을 왔으니 도와주시면 정말 감사하겠습니다.","위 케임 어 롱 웨이 바이 플레인 앤 보트, 쏘 아이드 륄리 어프리시에잇 유어 헬프."]],"AL":[["Excuse me, I'm sorry to bother you, but it seems there's been a mix-up with our reservation.","실례합니다, 번거롭게 해서 죄송하지만 예약에 착오가 있는 것 같아요.","익스큐즈 미, 아임 쏘리 투 바더 유, 벗 잇 씸즈 데어즈 빈 어 믹스 업 윗 아워 레저베이션."],["I booked an ocean-view room for five nights through your website two months ago, and I even received a confirmation email.","두 달 전 웹사이트로 오션뷰 방을 5박 예약했고 확인 메일도 받았어요.","아이 북트 언 오션 뷰 룸 포 파이브 나잇츠 쓰루 유어 웹사잇 투 먼쓰 어고, 앤 아이 이븐 리씨브드 어 칸퍼메이션 이메일."],["Let me show you. Here's the booking number, and you can see the dates and the room type right here.","보여 드릴게요. 예약 번호가 여기 있고, 날짜와 객실 종류도 바로 여기 있어요.","렛 미 쇼 유. 히어즈 더 부킹 넘버, 앤 유 캔 씨 더 데잇츠 앤 더 룸 타입 라잇 히어."],["I understand mistakes happen, so I'd like to suggest a few options.","실수는 있을 수 있으니 몇 가지 방안을 제안드릴게요.","아이 언더스탠드 미스테익스 해픈, 쏘 아이드 라익 투 서제스트 어 퓨 압션즈."],["First, if an ocean-view room becomes available tomorrow, we could stay in a standard room tonight and move tomorrow.","첫째, 내일 오션뷰 방이 나면 오늘은 일반실에 묵고 내일 옮길 수 있어요.","퍼스트, 이프 언 오션 뷰 룸 비컴즈 어베일러블 투마로우, 위 쿠드 스테이 인 어 스탠더드 룸 투나잇 앤 무브 투마로우."],["Second, you could upgrade us to a villa or a suite without any extra charge.","둘째, 추가 요금 없이 빌라나 스위트로 업그레이드해 주셔도 됩니다.","세컨드, 유 쿠드 업그레이드 어스 투 어 빌라 오어 어 스윗 위다웃 애니 엑스트라 차지."],["Or, if neither of those works, could you arrange a similar room at a nearby resort and cover the difference?","둘 다 어렵다면 근처 리조트에 비슷한 방을 잡아 주시고 차액을 부담해 주실 수 있을까요?","오어, 이프 니더 어브 도즈 웍스, 쿠드 유 어레인지 어 씨밀러 룸 앳 어 니어바이 리조트 앤 커버 더 디퍼런스?"],["We came all the way by plane and then by boat, so we're pretty tired, and I'd really appreciate it if you could sort this out quickly.","비행기에 배까지 타고 오느라 많이 피곤해서, 빨리 해결해 주시면 정말 감사하겠습니다.","위 케임 올 더 웨이 바이 플레인 앤 덴 바이 보트, 쏘 위어 프리티 타이어드, 앤 아이드 륄리 어프리시에잇 잇 이프 유 쿠드 쏘트 디스 아웃 퀵클리."]]}},{"id":"rp_exp","cat":"rp","name":"롤플레이 4: 관련 경험","q":"Have you ever had a problem while traveling? Tell me what happened and how you dealt with it.","qko":"여행 중에 문제를 겪은 적이 있나요? 무슨 일이 있었고 어떻게 해결했는지 말해 주세요.","tip":"언제·어디서 → 무슨 문제 → 기분 → 어떻게 해결 → 배운 점. 처음부터 끝까지 과거시제를 지키세요.","pat":[["On top of that,","게다가"],["We ended up -ing","결국 ~하게 됐다"],["The lesson I learned is that ~","내가 얻은 교훈은 ~이다"]],"L":{"IM1":[["I had a problem in Boracay.","보라카이에서 문제가 있었어요.","아이 해드 어 프라블럼 인 보라카이."],["There was no airport, so I took a boat.","공항이 없어서 배를 탔어요.","데어 워즈 노 에어포트, 쏘 아이 툭 어 보트."],["It was hard with my bags.","가방 때문에 힘들었어요.","잇 워즈 하드 윗 마이 백즈."]],"IM3":[["When I went to Boracay, I had a small problem.","보라카이에 갔을 때 작은 문제가 있었어요.","웬 아이 웬트 투 보라카이, 아이 해드 어 스몰 프라블럼."],["There is no airport on the island, so we had to take a bus and then a boat.","섬에 공항이 없어서 버스를 타고 다시 배를 타야 했어요.","데어 이즈 노 에어포트 온 디 아일랜드, 쏘 위 해드 투 테익 어 버스 앤 덴 어 보트."],["It was hot, and carrying our bags was very tiring.","덥고 짐을 들고 다니느라 무척 피곤했어요.","잇 워즈 핫, 앤 캐링 아워 백즈 워즈 베리 타이어링."],["On the way back, we used the hotel's transfer service, and it was much easier.","돌아올 때는 호텔 픽업 서비스를 이용했더니 훨씬 편했어요.","온 더 웨이 백, 위 유즈드 더 호텔즈 트랜스퍼 써비스, 앤 잇 워즈 머치 이지어."]],"IH":[["I'd like to tell you about a small problem I had when I traveled to Boracay in the Philippines.","필리핀 보라카이를 여행했을 때 겪은 작은 문제에 대해 말씀드릴게요.","아이드 라익 투 텔 유 어바웃 어 스몰 프라블럼 아이 해드 웬 아이 트래블드 투 보라카이 인 더 필리핀즈."],["The island doesn't have its own airport, so after we landed, we had to take a bus to the port and then catch a boat.","섬에 공항이 없어서 착륙 후 버스로 항구까지 간 다음 배를 타야 했어요.","디 아일랜드 더즌트 해브 잇츠 오운 에어포트, 쏘 애프터 위 랜디드, 위 해드 투 테익 어 버스 투 더 포트 앤 덴 캐치 어 보트."],["It was really hot and humid, and dragging our suitcases on and off the boat was exhausting.","정말 덥고 습했고, 캐리어를 배에 싣고 내리느라 녹초가 됐어요.","잇 워즈 륄리 핫 앤 휴미드, 앤 드래깅 아워 숫케이시즈 온 앤 오프 더 보트 워즈 이그조스팅."],["On top of that, we had to wait in a long line at the port for almost an hour.","게다가 항구에서 거의 한 시간이나 줄을 서서 기다려야 했어요.","온 탑 어브 댓, 위 해드 투 웨잇 인 어 롱 라인 앳 더 포트 포 올모스트 언 아워."],["So on the way back, I booked the resort's transfer service, and they handled everything from the hotel to the airport.","그래서 돌아올 땐 리조트 픽업 서비스를 예약했고, 호텔부터 공항까지 다 처리해 줬어요.","쏘 온 더 웨이 백, 아이 북트 더 리조츠 트랜스퍼 써비스, 앤 데이 핸들드 에브리띵 프럼 더 호텔 투 디 에어포트."],["It cost a little more, but it was definitely worth it.","조금 더 들었지만 확실히 그럴 가치가 있었어요.","잇 코스트 어 리를 모어, 벗 잇 워즈 데피니틀리 워쓰 잇."]],"AL":[["One problem I remember clearly happened on my trip to Boracay in the Philippines.","또렷이 기억나는 문제는 필리핀 보라카이 여행에서 있었어요.","원 프라블럼 아이 리멤버 클리얼리 해픈드 온 마이 트립 투 보라카이 인 더 필리핀즈."],["What a lot of people don't know is that the island doesn't have an airport, so you have to fly to a nearby town and then take a boat.","많은 사람이 모르는 건 섬에 공항이 없어서 근처 도시로 날아간 뒤 배를 타야 한다는 거예요.","왓 어 랏 어브 피플 돈 노우 이즈 댓 디 아일랜드 더즌트 해브 언 에어포트, 쏘 유 해브 투 플라이 투 어 니어바이 타운 앤 덴 테익 어 보트."],["We hadn't looked into the details beforehand, so when we landed, we were totally confused about where to buy boat tickets.","미리 자세히 알아보지 않아서, 착륙했을 때 배표를 어디서 사야 할지 완전히 헤맸어요.","위 해든트 룩트 인투 더 디테일즈 비포핸드, 쏘 웬 위 랜디드, 위 워 토털리 컨퓨즈드 어바웃 웨어 투 바이 보트 티킷츠."],["It was scorching hot, and we ended up waiting in line for almost an hour while dragging our heavy suitcases around.","찌는 듯이 더웠고, 무거운 캐리어를 끌며 결국 거의 한 시간이나 줄을 섰어요.","잇 워즈 스코칭 핫, 앤 위 엔디드 업 웨이팅 인 라인 포 올모스트 언 아워 와일 드래깅 아워 헤비 숫케이시즈 어라운드."],["To be honest, I was pretty frustrated, because I'm not the kind of person who likes moving around a lot on vacation.","솔직히 꽤 짜증이 났어요. 저는 여행 가서 많이 돌아다니는 걸 좋아하는 사람이 아니거든요.","투 비 아너스트, 아이 워즈 프리티 프러스트레이티드, 비코즈 아임 낫 더 카인드 어브 퍼슨 후 라익스 무빙 어라운드 어 랏 온 베케이션."],["So for the return trip, I asked the front desk to arrange a transfer package that covered the boat, the van, and the luggage.","그래서 돌아갈 때는 프런트에 배, 승합차, 짐까지 포함된 픽업 패키지를 요청했어요.","쏘 포 더 리턴 트립, 아이 애스크트 더 프런트 데스크 투 어레인지 어 트랜스퍼 패키지 댓 커버드 더 보트, 더 밴, 앤 더 러기지."],["It was completely stress-free, and we didn't have to lift a single bag.","스트레스가 전혀 없었고, 가방 하나 들 필요가 없었어요.","잇 워즈 컴플리틀리 스트레스 프리, 앤 위 디든 해브 투 리프트 어 싱글 백."],["The lesson I learned is that a little research and a little extra money can save you a lot of trouble.","조금만 알아보고 돈을 조금 더 쓰면 큰 고생을 덜 수 있다는 교훈을 얻었어요.","더 레슨 아이 런드 이즈 댓 어 리를 리서치 앤 어 리를 엑스트라 머니 캔 쎄이브 유 어 랏 어브 트러블."]]}}];
+const EXTRA_Q = [{"q":"How has your neighborhood changed since you first moved there?","ko":"처음 이사 온 이후로 동네가 어떻게 변했나요?","ref":"home"},{"q":"What do you usually do with your family on weekends?","ko":"주말에 가족과 보통 무엇을 하나요?","ref":"family"},{"q":"Tell me about a typical day at work, from morning to evening.","ko":"아침부터 저녁까지 회사에서의 일상적인 하루를 말해 주세요.","ref":"work"},{"q":"What do you do to stay healthy? Tell me about your routine.","ko":"건강을 위해 무엇을 하나요? 루틴을 말해 주세요.","ref":"walk"},{"q":"Describe a movie theater you often go to. What does it look like?","ko":"자주 가는 영화관을 묘사해 주세요. 어떻게 생겼나요?","ref":"movie"},{"q":"Who is your favorite actor or actress? Why do you like that person?","ko":"가장 좋아하는 배우는 누구인가요? 왜 좋아하나요?","ref":"memory"},{"q":"What are your plans for when you retire?","ko":"은퇴 후에 어떤 계획이 있나요?","ref":"parkgolf"},{"q":"Where did you go on your most recent trip in Korea? Tell me everything you did there.","ko":"최근 국내 여행은 어디로 갔나요? 거기서 한 일을 모두 말해 주세요.","ref":"travel_kr"},{"q":"What do you usually do to prepare for a trip overseas?","ko":"해외여행을 가기 전에 보통 어떤 준비를 하나요?","ref":"travel_abroad"},{"q":"You want to book a trip to Boracay. Call a travel agency and ask three or four questions about the package.","ko":"보라카이 여행을 예약하려고 합니다. 여행사에 전화해 패키지에 대해 서너 가지 질문을 하세요.","ref":"rp_call","cat":"rp"},{"q":"You bought movie tickets online, but you realize they are for the wrong day. Call the theater, explain the situation, and suggest two or three solutions.","ko":"온라인으로 영화표를 샀는데 날짜가 잘못됐습니다. 극장에 전화해 상황을 설명하고 해결책을 두세 가지 제안하세요.","ref":"rp_problem","cat":"rp"}];
+const LEVELS = ["IM1","IM3","IH","AL"];
+const LEVEL_NOTE = {"IM1":"짧고 단순한 문장, 기본 사실 위주","IM3":"이유와 빈도를 덧붙인 문장","IH":"묘사·순서·비교가 들어간 문단","AL":"시제 변화와 감정, 결론까지 갖춘 이야기"};
+
+</script>
+<script>
+(function(){
+"use strict";
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LVC = {IM1:"var(--l1)",IM3:"var(--l2)",IH:"var(--l3)",AL:"var(--l4)"};
+const ICON = {
+  play:'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>',
+  slow:'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3v10l5-5zM9 3v10l5-5z" fill="currentColor" opacity=".8"/></svg>',
+  mic:'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8" rx="2.5" fill="currentColor"/><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>',
+  stop:'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5" fill="currentColor"/></svg>',
+  me:'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5" r="3" fill="currentColor"/><path d="M2.5 14.5c.7-3 2.9-4.5 5.5-4.5s4.8 1.5 5.5 4.5" fill="currentColor"/></svg>'
+};
+
+/* ---------- settings ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("opicwalk:"+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("opicwalk:"+k, JSON.stringify(v)); }catch(e){} }
+};
+const S = {
+  view:"study", topic: store.get("topic","intro"), level: store.get("level","IH"),
+  showKo: store.get("showKo", true), showPr: store.get("showPr", true), rate: store.get("rate", 0.9),
+  compare:false
+};
+
+/* ---------- speech synthesis ---------- */
+let voices = [];
+function loadVoices(){ try{ voices = speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang)); }catch(e){} }
+if ("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function pickVoice(){
+  const pref = ["Google US English","Samantha","Microsoft Aria","Microsoft Jenny","Microsoft Zira","Alex"];
+  for (const p of pref){ const v = voices.find(v=>v.name.includes(p)); if (v) return v; }
+  return voices[0] || null;
+}
+function speak(text, rate, onend){
+  if (!("speechSynthesis" in window)){ toast("이 브라우저는 음성 읽기를 지원하지 않습니다."); onend && onend(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[“”"]/g,""));
+  u.lang = "en-US"; u.rate = rate || S.rate; const v = pickVoice(); if (v) u.voice = v;
+  u.onend = () => onend && onend(); u.onerror = () => onend && onend();
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){ try{ speechSynthesis.cancel(); }catch(e){} }
+
+/* ---------- mic / recognition ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+async function getStream(){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("nomedia");
+  return navigator.mediaDevices.getUserMedia({audio:true});
+}
+function micErrorText(e){
+  const n = e && (e.name || e.error || e.message) || "";
+  if (/NotAllowed|not-allowed|Permission|service-not-allowed/i.test(n)) return "마이크 권한이 막혀 있습니다. 주소창 옆 마이크 아이콘에서 허용하거나, 페이지를 새 탭에서 열어 다시 시도하세요.";
+  if (/NotFound|audio-capture/i.test(n)) return "마이크를 찾지 못했습니다. 마이크 연결을 확인하세요.";
+  if (/nomedia/.test(n)) return "이 환경에서는 녹음을 사용할 수 없습니다. Chrome 또는 Edge에서 열어 주세요.";
+  if (/no-speech/.test(n)) return "목소리가 들리지 않았습니다. 마이크 가까이에서 다시 말해 보세요.";
+  if (/network/.test(n)) return "음성 인식 서버에 연결하지 못했습니다. 인터넷 연결을 확인하세요.";
+  return "녹음을 시작하지 못했습니다. ("+n+")";
+}
+
+/* ---------- text compare ---------- */
+const NUMW = {zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60};
+function tokens(s){
+  return s.toLowerCase().replace(/[’]/g,"'").replace(/-/g," ").replace(/[^a-z0-9' ]+/g," ").split(/\s+/).filter(Boolean);
+}
+function normNums(arr){ // join number words into digits: "twenty five" -> "25"
+  const out=[];
+  for (let i=0;i<arr.length;i++){
+    const w=arr[i];
+    if (w in NUMW){ let v=NUMW[w]; if (v>=20 && arr[i+1] in NUMW && NUMW[arr[i+1]]<10){ v+=NUMW[arr[i+1]]; i++; } out.push(String(v)); }
+    else out.push(w);
+  }
+  return out;
+}
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); } prev=cur; }
+  return prev[n];
+}
+function sim(a,b){ if(a===b) return 1; const d=lev(a,b); return 1-d/Math.max(a.length,b.length); }
+function align(targetText, spokenText){
+  const rawT = targetText.replace(/-/g," ").split(/\s+/).filter(Boolean);
+  const T = rawT.map(w=>normNums(tokens(w)).join(" ")).map(w=>w||"");
+  const P = normNums(tokens(spokenText));
+  const m=T.length,n=P.length;
+  const dp=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  const val=(i,j)=>{ const s=sim(T[i],P[j]); return s>=.99?2:(s>=.6?1:-1); };
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++){
+    const v=val(i-1,j-1); dp[i][j]=Math.max(dp[i-1][j], dp[i][j-1], v>0? dp[i-1][j-1]+v : -1e9);
+  }
+  const res=new Array(m).fill("miss"); let i=m,j=n;
+  while(i>0&&j>0){
+    const v=val(i-1,j-1);
+    if (v>0 && dp[i][j]===dp[i-1][j-1]+v){ res[i-1]= v===2?"ok":"close"; i--; j--; }
+    else if (dp[i-1][j]>=dp[i][j-1]) i--; else j--;
+  }
+  const scoreable = T.filter(t=>t).length || 1;
+  let pts=0; res.forEach((r,k)=>{ if(!T[k]) return; pts += r==="ok"?1:(r==="close"?.5:0); });
+  return {words:rawT, marks:res, score:Math.round(pts/scoreable*100)};
+}
+const TIP_RULES = [
+  [/th/, "th: 혀끝을 윗니 아래에 살짝 내밀고 바람을 내보내세요. '쓰/드'로 바꾸지 않기 (think, the)."],
+  [/v/, "v: 윗니를 아랫입술에 가볍게 대고 목을 울리세요. 'ㅂ'이 아닙니다 (very, movie)."],
+  [/f|ph/, "f: 윗니를 아랫입술에 대고 바람만 내보내세요. 'ㅍ'이 아닙니다 (fifty, family)."],
+  [/^r|[^aeiou]r/, "r: 혀끝이 입천장에 닿지 않게 뒤로 말아서 소리 내세요 (really, trail)."],
+  [/l/, "l: 혀끝을 윗잇몸에 확실히 붙였다 떼세요. 끝의 l은 '어' 소리처럼 약하게 (live, school)."],
+  [/z|s$/, "z/s 끝소리: 복수·3인칭 -s를 흘리지 말고 짧게 붙여 발음하세요 (years, works)."],
+  [/ed$/, "-ed 끝소리: 과거형 끝을 삼키지 말고 [트]/[드]를 가볍게 남기세요 (walked, moved)."],
+  [/^w/, "w: 입술을 동그랗게 모았다가 풀면서 시작하세요 (walk, wife)."]
+];
+function tipsFor(missed){
+  const out=new Set();
+  const s = missed.map(w=>w.toLowerCase());
+  if (s.some(w=>/^(walk|work|walking|working)$/.test(w))) out.add("walk [웍, 입을 크게, l 묵음] 와 work [워-크, 혀를 말아 r]를 구분하세요.");
+  for (const [re,tip] of TIP_RULES){ if (s.some(w=>re.test(w))) out.add(tip); if (out.size>=4) break; }
+  return [...out];
+}
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  let t=$("#toast"); if(!t){ t=document.createElement("div"); t.id="toast"; t.setAttribute("role","status");
+    t.style.cssText="position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;max-width:90vw"; document.body.appendChild(t); }
+  t.textContent=msg; t.style.display="block"; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display="none",3500);
+}
+
+/* ---------- STUDY VIEW ---------- */
+let playAllOn=false;
+function topicObj(){ return TOPICS.find(t=>t.id===S.topic) || TOPICS[0]; }
+function wc(arr){ return arr.reduce((n,s)=>n+s[0].split(/\s+/).length,0); }
+
+function renderStudy(){
+  const t=topicObj(); const L=t.L[S.level];
+  const main=$("#main");
+  main.innerHTML = `
+  <div class="study">
+    <aside class="topics" aria-label="주제">
+      <h2>설문 주제</h2>
+      ${TOPICS.filter(x=>x.cat!=="rp").map(x=>`<button data-topic="${x.id}" aria-current="${x.id===t.id}">${esc(x.name)}</button>`).join("")}
+      <h2 style="margin-top:18px">롤플레이 예상문제</h2>
+      ${TOPICS.filter(x=>x.cat==="rp").map(x=>`<button data-topic="${x.id}" aria-current="${x.id===t.id}">${esc(x.name)}</button>`).join("")}
+    </aside>
+    <section>
+      <div class="qhead">
+        <p class="q">${esc(t.q)}</p>
+        <p class="qko">${esc(t.qko)}</p>
+        ${t.tip?`<p class="rptip">답변 요령: ${esc(t.tip)}</p>`:""}
+        <div class="qplay"><button class="btn" id="qplay">${ICON.play}질문 듣기</button></div>
+      </div>
+
+      <div class="trail">
+        <div class="trail-title"><strong>같은 이야기, 네 가지 수준</strong><small>오른쪽으로 갈수록 문장이 길고 복잡해집니다</small></div>
+        <div class="trail-steps" id="steps">
+          <svg class="trail-svg" preserveAspectRatio="none" viewBox="0 0 400 60" aria-hidden="true"><path d="M50 40 C 110 40, 110 32, 150 30 S 230 20, 250 18 S 330 8, 350 6" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5" vector-effect="non-scaling-stroke"/></svg>
+          ${LEVELS.map((lv,k)=>{ const a=t.L[lv]; return `<button class="step" data-level="${lv}" aria-pressed="${lv===S.level}" style="--c:${LVC[lv]};padding-bottom:${k*9}px"><span class="dot"></span><span class="lv">${lv}</span><span class="meta">${a.length}문장 · ${wc(a)}단어</span></button>`; }).join("")}
+        </div>
+        <p class="lvnote">${S.level}: ${esc(LEVEL_NOTE[S.level])}</p>
+      </div>
+
+      <div class="toolbar">
+        <label class="toggle"><input type="checkbox" id="optKo" ${S.showKo?"checked":""}>한글 해석</label>
+        <label class="toggle"><input type="checkbox" id="optPr" ${S.showPr?"checked":""}>한글 발음</label>
+        <span class="seg" role="group" aria-label="읽기 속도">
+          ${[[0.75,"느리게"],[0.9,"보통"],[1.05,"빠르게"]].map(([r,l])=>`<button data-rate="${r}" aria-pressed="${Math.abs(S.rate-r)<.01}">${l}</button>`).join("")}
+        </span>
+        <span class="spacer"></span>
+        <button class="btn" id="cmpBtn" aria-pressed="${S.compare}">${S.compare?"문장별 보기":"레벨 비교"}</button>
+        <button class="btn primary" id="playAll">${ICON.play}전체 듣기</button>
+      </div>
+
+      ${S.compare ? renderCompare(t) : `
+      <ol class="sents ${S.showKo?"":"hide-ko"} ${S.showPr?"":"hide-pr"}" id="sents">
+        ${L.map((s,i)=>`<li class="sent" data-i="${i}">
+          <span class="n">${i+1}</span>
+          <div>
+            <p class="en">${esc(s[0])}</p>
+            <p class="ko">${esc(s[1])}</p>
+            <p class="pr">${esc(s[2])}</p>
+          </div>
+          <div class="acts">
+            <button class="btn" data-act="play">${ICON.play}듣기</button>
+            <button class="btn" data-act="slow">${ICON.slow}천천히</button>
+            <button class="btn rec" data-act="rec">${ICON.mic}따라 말하기</button>
+          </div>
+        </li>`).join("")}
+      </ol>`}
+
+      <p class="sec-t">이 주제의 핵심 패턴</p>
+      <div class="pats">${t.pat.map(p=>`<span class="pat"><b>${esc(p[0])}</b>${esc(p[1])}</span>`).join("")}</div>
+    </section>
+  </div>`;
+  bindStudy();
+}
+function renderCompare(t){
+  return `<div class="compare">${LEVELS.map(lv=>{ const a=t.L[lv]; return `<article class="cmp" style="--c:${LVC[lv]}"><h3>${lv}</h3><div class="wc">${a.length}문장 · ${wc(a)}단어</div><p>${esc(a.map(s=>s[0]).join(" "))}</p><div style="margin-top:10px"><button class="btn" data-cmpplay="${lv}">${ICON.play}듣기</button></div></article>`; }).join("")}</div>`;
+}
+function bindStudy(){
+  document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{ stopAll(); S.topic=b.dataset.topic; store.set("topic",S.topic); renderStudy(); window.scrollTo({top:0}); });
+  document.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{ stopAll(); S.level=b.dataset.level; store.set("level",S.level); renderStudy(); });
+  $("#qplay").onclick=()=>speak(topicObj().q);
+  $("#optKo").onchange=e=>{ S.showKo=e.target.checked; store.set("showKo",S.showKo); const l=$("#sents"); if(l) l.classList.toggle("hide-ko",!S.showKo); };
+  $("#optPr").onchange=e=>{ S.showPr=e.target.checked; store.set("showPr",S.showPr); const l=$("#sents"); if(l) l.classList.toggle("hide-pr",!S.showPr); };
+  document.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>{ S.rate=+b.dataset.rate; store.set("rate",S.rate); document.querySelectorAll("[data-rate]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  $("#cmpBtn").onclick=()=>{ stopAll(); S.compare=!S.compare; renderStudy(); };
+  $("#playAll").onclick=togglePlayAll;
+  document.querySelectorAll("[data-cmpplay]").forEach(b=>b.onclick=()=>{ const a=topicObj().L[b.dataset.cmpplay]; speak(a.map(s=>s[0]).join(" ")); });
+  document.querySelectorAll(".sent").forEach(li=>{
+    const i=+li.dataset.i, s=topicObj().L[S.level][i];
+    li.querySelector('[data-act="play"]').onclick=()=>speak(s[0]);
+    li.querySelector('[data-act="slow"]').onclick=()=>speak(s[0],0.65);
+    li.querySelector('[data-act="rec"]').onclick=(e)=>practice(li, s[0], e.currentTarget);
+  });
+}
+function togglePlayAll(){
+  const btn=$("#playAll");
+  if (playAllOn){ stopAll(); return; }
+  const t=topicObj(), L=t.L[S.level];
+  if (S.compare){ speak(L.map(s=>s[0]).join(" ")); return; }
+  playAllOn=true; btn.innerHTML=ICON.stop+"멈추기";
+  let i=0;
+  const next=()=>{
+    document.querySelectorAll(".sent.playing").forEach(x=>x.classList.remove("playing"));
+    if(!playAllOn || i>=L.length){ stopAll(); return; }
+    const li=document.querySelector(`.sent[data-i="${i}"]`); if(li){ li.classList.add("playing"); li.scrollIntoView({block:"center",behavior:"smooth"}); }
+    speak(L[i][0], S.rate, ()=>{ i++; setTimeout(next,350); });
+  };
+  next();
+}
+function stopAll(){
+  playAllOn=false; stopSpeak();
+  document.querySelectorAll(".sent.playing").forEach(x=>x.classList.remove("playing"));
+  const b=$("#playAll"); if(b) b.innerHTML=ICON.play+"전체 듣기";
+  if (activePractice) activePractice.abort();
+}
+
+/* ---------- pronunciation practice ---------- */
+let activePractice=null;
+async function practice(li, target, btn){
+  if (activePractice){ const same = activePractice.li===li; activePractice.finish(); if(same) return; }
+  stopSpeak();
+  let box=li.querySelector(".check");
+  if(!box){ box=document.createElement("div"); box.className="check"; li.appendChild(box); }
+  box.innerHTML=`<p class="status">마이크 준비 중…</p>`;
+  let stream=null, rec=null, chunks=[], recog=null, finalText="", alts=[], done=false;
+  const ctrl={li, abort(){ cleanup(); box.innerHTML=`<p class="status">연습을 멈췄습니다.</p>`; }, finish(){ try{ recog&&recog.stop(); }catch(e){} try{ rec&&rec.state!=="inactive"&&rec.stop(); }catch(e){} }};
+  activePractice=ctrl;
+  const setBtn=live=>{ btn.classList.toggle("live",live); btn.innerHTML= live? ICON.stop+"말하기 끝" : ICON.mic+"따라 말하기"; };
+  function cleanup(){ done=true; setBtn(false); try{recog&&recog.abort();}catch(e){} try{ rec&&rec.state!=="inactive"&&rec.stop(); }catch(e){} if(stream) stream.getTracks().forEach(t=>t.stop()); if(activePractice===ctrl) activePractice=null; }
+
+  try{ stream=await getStream(); }catch(e){ box.innerHTML=`<p class="status">${esc(micErrorText(e))}</p>`; activePractice=null; return; }
+  let audioURL=null;
+  const recDone = new Promise(res=>{
+    try{
+      rec=new MediaRecorder(stream); rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+      rec.onstop=()=>{ if(chunks.length) audioURL=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType||"audio/webm"})); res(); };
+      rec.start();
+    }catch(e){ res(); }
+  });
+  setBtn(true);
+  if (!SR){
+    box.innerHTML=`<p class="status">녹음 중입니다. 문장을 읽은 뒤 '말하기 끝'을 누르세요. (이 브라우저는 발음 인식을 지원하지 않아 녹음 비교만 가능합니다. 발음 채점은 Chrome·Edge에서 됩니다.)</p>`;
+    const origFinish=ctrl.finish; ctrl.finish=()=>{ origFinish(); };
+    await new Promise(r=>{ btn.addEventListener("click",r,{once:true}); ctrl.finish=()=>{ try{rec.stop();}catch(e){} r(); }; });
+    try{ rec.state!=="inactive"&&rec.stop(); }catch(e){}
+    await recDone; stream.getTracks().forEach(t=>t.stop()); setBtn(false); activePractice=null;
+    box.innerHTML=`<div class="row">${audioURL?`<button class="btn" data-me>${ICON.me}내 녹음 듣기</button>`:""}<button class="btn" data-nat>${ICON.play}원어민 듣기</button></div>`;
+    bindCompareBtns(box,audioURL,target); return;
+  }
+  recog=new SR(); recog.lang="en-US"; recog.interimResults=true; recog.maxAlternatives=3; recog.continuous=false;
+  box.innerHTML=`<p class="status">듣고 있습니다. 문장을 또박또박 읽어 주세요…</p><p class="heard" id="interim"></p>`;
+  recog.onresult=e=>{
+    let interim="";
+    for(let k=e.resultIndex;k<e.results.length;k++){
+      const r=e.results[k];
+      if(r.isFinal){ finalText+=r[0].transcript+" "; for(let a=0;a<r.length;a++) alts.push(r[a].transcript); }
+      else interim+=r[0].transcript;
+    }
+    const el=box.querySelector("#interim"); if(el) el.textContent=(finalText+interim).trim();
+  };
+  let errMsg=null;
+  recog.onerror=e=>{ if(e.error!=="aborted") errMsg=micErrorText(e); };
+  recog.onend=async()=>{
+    try{ rec&&rec.state!=="inactive"&&rec.stop(); }catch(e){}
+    await recDone; if(stream) stream.getTracks().forEach(t=>t.stop()); setBtn(false);
+    if (activePractice===ctrl) activePractice=null;
+    if (done) return;
+    if (!finalText.trim()){ box.innerHTML=`<p class="status">${esc(errMsg||"인식된 말이 없습니다. 다시 시도해 보세요.")}</p>${audioURL?`<div class="row" style="margin-top:8px"><button class="btn" data-me>${ICON.me}내 녹음 듣기</button><button class="btn" data-nat>${ICON.play}원어민 듣기</button></div>`:""}`; bindCompareBtns(box,audioURL,target); return; }
+    let best=align(target, finalText), bestText=finalText.trim();
+    alts.forEach(a=>{ const r=align(target,a); if(r.score>best.score){ best=r; bestText=a; } });
+    showResult(box, target, best, bestText, audioURL);
+  };
+  try{ recog.start(); }catch(e){ box.innerHTML=`<p class="status">${esc(micErrorText(e))}</p>`; cleanup(); }
+}
+function bindCompareBtns(box,url,target){
+  const me=box.querySelector("[data-me]"), nat=box.querySelector("[data-nat]");
+  let audio=null;
+  if(me) me.onclick=()=>{ stopSpeak(); if(audio){audio.pause();} audio=new Audio(url); audio.play(); };
+  if(nat) nat.onclick=()=>{ if(audio) audio.pause(); speak(target); };
+}
+function showResult(box, target, r, heard, url){
+  const missed=r.words.filter((w,k)=>r.marks[k]!=="ok");
+  const tips=tipsFor(missed.map(w=>w.replace(/[^A-Za-z']/g,"")));
+  const verdict = r.score>=90?"아주 좋아요. 원어민 속도로 한 번 더 도전해 보세요.": r.score>=70?"잘했어요. 빨간 단어만 다시 연습하면 됩니다.": r.score>=40?"절반 이상 전달됐어요. '천천히' 듣기 후 끊어 읽어 보세요.":"문장을 짧게 나눠서, 단어를 누르며 하나씩 따라 해 보세요.";
+  box.innerHTML=`
+    <div class="score"><span class="big">${r.score}점</span><span class="lbl">${esc(verdict)}</span></div>
+    <p class="words">${r.words.map((w,k)=>`<span class="w ${r.marks[k]}" data-w="${esc(w.replace(/[^A-Za-z0-9']/g,""))}" title="눌러서 이 단어 듣기">${esc(w)}</span>`).join(" ")}</p>
+    <p class="heard">인식된 문장: <b>${esc(heard)}</b></p>
+    <div class="row">
+      ${url?`<button class="btn" data-me>${ICON.me}내 녹음 듣기</button>`:""}
+      <button class="btn" data-nat>${ICON.play}원어민 듣기</button>
+      <span class="hint">두 소리를 번갈아 들으며 비교해 보세요.</span>
+    </div>
+    ${tips.length?`<p class="sec-t" style="margin-top:14px">발음 교정 포인트</p><ul class="tips">${tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:""}
+    <div class="legend"><span><i style="background:var(--ok-bg);border:1px solid var(--ok)"></i>정확</span><span><i style="background:var(--close-bg);border:1px solid var(--close)"></i>비슷함</span><span><i style="background:var(--miss-bg);border:1px solid var(--miss)"></i>인식 안 됨</span><span>단어를 누르면 천천히 들려줍니다</span></div>`;
+  box.querySelectorAll(".w").forEach(s=>s.onclick=()=>speak(s.dataset.w,0.6));
+  bindCompareBtns(box,url,target);
+}
+
+/* ---------- TEST VIEW ---------- */
+const T = { phase:"setup", count: store.get("tcount",5), model: store.get("tmodel","IH"), qs:[], i:0, results:[], replays:0, showQ:false };
+let sampleFn=null;
+(async()=>{ try{ if(window.claude && window.claude.use){ sampleFn = await window.claude.use("sample"); if (S.view==="test") renderTest(); } }catch(e){ sampleFn=null; } })();
+
+function buildQuestions(n){
+  const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+  const intro=TOPICS[0];
+  const sv=shuffle([...TOPICS.filter(t=>t.cat!=="rp"&&t.id!=="intro").map(t=>({q:t.q,ko:t.qko,ref:t.id})), ...EXTRA_Q.filter(e=>e.cat!=="rp")]);
+  const rp=shuffle([...TOPICS.filter(t=>t.cat==="rp").map(t=>({q:t.q,ko:t.qko,ref:t.id,rp:true})), ...EXTRA_Q.filter(e=>e.cat==="rp").map(e=>({...e,rp:true}))]);
+  const nrp = n<=3?1:(n<=5?2:3);
+  return [{q:intro.q,ko:intro.qko,ref:"intro"}, ...sv.slice(0,n-1-nrp), ...rp.slice(0,nrp)];
+}
+function renderTest(){
+  const main=$("#main");
+  if (T.phase==="setup"){
+    main.innerHTML=`<div class="test"><div class="panel">
+      <h2>실전 테스트</h2>
+      <p class="lead">실제 OPIc처럼 질문을 듣고 최대 2분 동안 답합니다. 끝나면 답변 기록, 간이 등급, 모범 답안 비교를 보여 줍니다.</p>
+      <div class="field"><label class="t">문항 수</label><div class="choices" id="cnt">${[3,5,7].map(n=>`<button data-n="${n}" aria-pressed="${T.count===n}">${n}문항</button>`).join("")}</div></div>
+      <div class="field"><label class="t">비교할 모범 답안 수준</label><div class="choices" id="mdl">${LEVELS.map(l=>`<button data-m="${l}" aria-pressed="${T.model===l}">${l}</button>`).join("")}</div></div>
+      <div class="field"><label class="t">진행 방식</label><ol class="steps-list">
+        <li>Eva가 질문을 읽어 줍니다. 다시 듣기는 한 번만 가능합니다.</li>
+        <li>'답변 시작'을 누르고 말합니다. 2분이 지나면 자동으로 끝납니다.</li>
+        <li>질문 글자는 기본으로 가려져 있습니다. 실제 시험처럼 귀로만 들어 보세요.</li>
+      </ol></div>
+      ${SR?"":`<p class="notice">이 브라우저는 음성 인식을 지원하지 않아 녹음만 됩니다. 답변 내용 분석은 Chrome 또는 Edge에서 이용하세요. 결과 화면에서 답변을 직접 입력할 수도 있습니다.</p>`}
+      <div class="row" style="margin-top:22px"><button class="btn primary" id="startTest">${ICON.play}테스트 시작</button></div>
+    </div></div>`;
+    document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{ T.count=+b.dataset.n; store.set("tcount",T.count); renderTest(); });
+    document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{ T.model=b.dataset.m; store.set("tmodel",T.model); renderTest(); });
+    $("#startTest").onclick=()=>{ T.qs=buildQuestions(T.count); T.i=0; T.results=[]; T.phase="q"; T.replays=0; T.showQ=false; renderTest(); askQuestion(); };
+    return;
+  }
+  if (T.phase==="q"){
+    const q=T.qs[T.i];
+    main.innerHTML=`<div class="test"><div class="panel">
+      <div class="examiner">
+        <div class="avatar" id="ava"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="14" r="7" fill="currentColor"/><path d="M6 37c1.5-8 7-12 14-12s12.5 4 14 12" fill="currentColor"/></svg></div>
+        <div><div class="progress">질문 ${T.i+1} / ${T.qs.length}${q.rp?" · 롤플레이":""} · 시험관 Eva</div>
+          <p class="qtext ${T.showQ?"":"blur"}" id="qtext">${esc(q.q)}</p>
+          ${T.showQ?`<p class="hint" style="margin:4px 0 0">${esc(q.ko)}</p>`:""}
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="replay" ${T.replays>=1?"disabled":""}>${ICON.play}다시 듣기 ${T.replays>=1?"(사용함)":"(1회)"}</button>
+        <button class="btn" id="showq">${T.showQ?"질문 가리기":"질문 글자 보기"}</button>
+      </div>
+      <div class="timer" id="timer">0:00</div>
+      <div class="tbar"><div id="tfill"></div></div>
+      <div class="live" id="live" aria-live="polite">답변을 시작하면 인식된 말이 여기에 표시됩니다.</div>
+      <div class="row">
+        <button class="btn rec" id="ans">${ICON.mic}답변 시작</button>
+        <button class="btn" id="skip">건너뛰기</button>
+        <span class="spacer"></span>
+        <button class="btn" id="quit">테스트 그만두기</button>
+      </div>
+    </div></div>`;
+    $("#replay").onclick=()=>{ if(T.replays>=1||answering) return; T.replays++; askQuestion(); $("#replay").disabled=true; $("#replay").innerHTML=ICON.play+"다시 듣기 (사용함)"; };
+    $("#showq").onclick=()=>{ T.showQ=!T.showQ; const keep=answering; if(!keep) renderTest(); else { $("#qtext").classList.toggle("blur",!T.showQ); } };
+    $("#ans").onclick=()=> answering? stopAnswer() : startAnswer();
+    $("#skip").onclick=()=>{ if(answering) stopAnswer(true); else { T.results.push({q:T.qs[T.i],text:"",secs:0,url:null,skipped:true}); nextQ(); } };
+    $("#quit").onclick=()=>{ if(answering) stopAnswer(true); stopSpeak(); T.phase= T.results.length? "result":"setup"; renderTest(); };
+    return;
+  }
+  if (T.phase==="result") renderResults();
+}
+function askQuestion(){
+  const q=T.qs[T.i]; const ava=$("#ava"); ava&&ava.classList.add("talk");
+  speak(q.q, 0.95, ()=>{ const a=$("#ava"); a&&a.classList.remove("talk"); });
+}
+
+let answering=false, A=null;
+async function startAnswer(){
+  stopSpeak(); const ava=$("#ava"); ava&&ava.classList.remove("talk");
+  let stream;
+  try{ stream=await getStream(); }catch(e){ $("#live").textContent=micErrorText(e); return; }
+  answering=true;
+  A={stream, chunks:[], rec:null, recog:null, final:"", start:Date.now(), timer:null, url:null, stopped:false};
+  try{ A.rec=new MediaRecorder(stream); A.rec.ondataavailable=e=>e.data.size&&A.chunks.push(e.data); A.rec.start(); }catch(e){}
+  const btn=$("#ans"); btn.classList.add("live"); btn.innerHTML=ICON.stop+"답변 끝내기";
+  $("#live").textContent= SR? "듣고 있습니다…" : "녹음 중입니다… (이 브라우저는 실시간 인식을 지원하지 않습니다)";
+  if (SR){
+    const startRecog=()=>{
+      const r=new SR(); r.lang="en-US"; r.continuous=true; r.interimResults=true; A.recog=r;
+      r.onresult=e=>{ let interim=""; for(let k=e.resultIndex;k<e.results.length;k++){ const x=e.results[k]; if(x.isFinal) A.final+=x[0].transcript.trim()+". "; else interim+=x[0].transcript; } const el=$("#live"); if(el) el.textContent=(A.final+interim).trim()||"듣고 있습니다…"; };
+      r.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){ const el=$("#live"); if(el) el.textContent=micErrorText(e); } };
+      r.onend=()=>{ if(answering && !A.stopped) { try{ startRecog(); }catch(e){} } };
+      try{ r.start(); }catch(e){}
+    };
+    startRecog();
+  }
+  A.timer=setInterval(()=>{
+    const s=Math.floor((Date.now()-A.start)/1000); const el=$("#timer"); if(!el) return;
+    el.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); el.classList.toggle("warn",s>=105);
+    $("#tfill").style.width=Math.min(100,s/120*100)+"%";
+    if (s>=120) stopAnswer();
+  },250);
+}
+function stopAnswer(skipped){
+  if(!A || A.stopped) return;
+  const ab=$("#ans"); if(ab){ ab.disabled=true; ab.classList.remove("live"); ab.innerHTML=ICON.mic+"정리 중…"; }
+  answering=false; A.stopped=true; clearInterval(A.timer);
+  const secs=Math.max(1,Math.round((Date.now()-A.start)/1000));
+  try{ A.recog&&A.recog.stop(); }catch(e){}
+  const finish=()=>{
+    A.stream.getTracks().forEach(t=>t.stop());
+    const url = A.chunks.length? URL.createObjectURL(new Blob(A.chunks,{type:(A.rec&&A.rec.mimeType)||"audio/webm"})) : null;
+    T.results.push({q:T.qs[T.i], text: skipped? "" : A.final.trim(), secs: skipped?0:secs, url: skipped?null:url, skipped:!!skipped});
+    A=null; if (S.view==="test" && T.phase==="q") nextQ();
+  };
+  // allow recognition final results to arrive
+  setTimeout(()=>{ if(A.rec && A.rec.state!=="inactive"){ A.rec.onstop=finish; try{A.rec.stop();}catch(e){finish();} } else finish(); }, SR? 700 : 0);
+}
+function nextQ(){
+  T.i++; T.replays=0; T.showQ=false;
+  if (T.i>=T.qs.length){ T.phase="result"; renderTest(); return; }
+  renderTest(); askQuestion();
+}
+
+/* ---------- scoring ---------- */
+const CONNECT = ["because","so","but","however","also","actually","for example","first","second","then","after that","when","while","although","since","which","who","where","that's why","to be honest","in the end","especially","usually","honestly","looking back","as a result","anyway","what i like"];
+const IRREG = /\b(was|were|went|had|saw|did|got|took|made|came|found|felt|thought|told|said|became|began|bought|met|left)\b/;
+function analyze(text, secs){
+  const lower=(" "+text.toLowerCase()+" ");
+  const words=(text.match(/[A-Za-z']+/g)||[]).length;
+  const wpm= secs? Math.round(words/(secs/60)) : 0;
+  const found=CONNECT.filter(c=>new RegExp("\\b"+c.replace(/'/g,"'")+"\\b").test(lower));
+  const past = IRREG.test(lower) || /\b\w{3,}ed\b/.test(lower);
+  const perfect = /\b(i've|have been|has been|we've|i have)\b/.test(lower);
+  const rel = /\b(which|who|where)\b/.test(lower);
+  const fillers=(lower.match(/\b(um+|uh+|erm)\b/g)||[]).length;
+  let s = Math.min(words,180)/180*40 + Math.min(found.length,8)/8*25 + (past?8:0) + (perfect?7:0) + (rel?5:0);
+  s += (wpm>=90&&wpm<=170)?15:(wpm>=60?8:(words?3:0));
+  const lv = !words? "-" : s<22?"IL":s<35?"IM1":s<48?"IM2":s<62?"IM3":s<78?"IH":"AL";
+  return {words,wpm,found,past,perfect,rel,fillers,score:Math.round(s),lv};
+}
+const LV_ORDER=["IL","IM1","IM2","IM3","IH","AL"];
+
+function renderResults(){
+  const rs=T.results.map(r=>({...r, a:analyze(r.text,r.secs)}));
+  const scored=rs.filter(r=>r.a.words>0);
+  const avg = scored.length? scored.reduce((n,r)=>n+r.a.score,0)/scored.length : 0;
+  const overall = !scored.length? "-" : avg<22?"IL":avg<35?"IM1":avg<48?"IM2":avg<62?"IM3":avg<78?"IH":"AL";
+  const totW=scored.reduce((n,r)=>n+r.a.words,0), totS=scored.reduce((n,r)=>n+r.secs,0);
+  $("#main").innerHTML=`<div class="test">
+    <div class="panel">
+      <div class="overall"><div><div class="hint">간이 추정 등급</div><div class="lvbig">${overall}</div></div>
+        <p style="margin:0;max-width:30em;color:var(--mute);font-size:14px">답변 길이, 연결어, 시제, 말하기 속도로 계산한 참고용 등급입니다. 실제 채점과 다를 수 있습니다. ${sampleFn?"문항별 'AI 첨삭 받기'로 더 자세한 평가를 받아 보세요.":""}</p></div>
+      <div class="metrics">
+        <div class="metric"><b>${rs.length}</b><span>응답 문항</span></div>
+        <div class="metric"><b>${totW}</b><span>총 단어 수</span></div>
+        <div class="metric"><b>${totS? Math.round(totW/(totS/60)):0}</b><span>평균 분당 단어</span></div>
+        <div class="metric"><b>${Math.round(totS/Math.max(1,scored.length))}초</b><span>평균 답변 시간</span></div>
+      </div>
+      <div class="row"><button class="btn primary" id="again">${ICON.play}새 테스트</button><span class="hint">IH 이상은 보통 한 답변에 1분 30초 이상, 120단어 이상 말합니다.</span></div>
+    </div>
+    ${rs.map((r,k)=>resultItem(r,k)).join("")}
+  </div>`;
+  $("#again").onclick=()=>{ T.phase="setup"; renderTest(); };
+  rs.forEach((r,k)=>bindResult(r,k));
+}
+function resultItem(r,k){
+  const ref=TOPICS.find(t=>t.id===r.q.ref); const model=ref.L[T.model];
+  const a=r.a;
+  return `<details class="res" ${k===0?"open":""}>
+    <summary><span class="lvtag">${r.skipped?"건너뜀":a.lv}</span><span class="qs">Q${k+1}. ${esc(r.q.q)}</span></summary>
+    <div class="resbody">
+      <p class="hint" style="margin:0 0 10px">${esc(r.q.ko)}</p>
+      ${r.url?`<div class="row" style="margin-bottom:10px"><audio controls src="${r.url}" style="max-width:100%"></audio></div>`:""}
+      <label class="hint" for="tx${k}">내 답변 (인식 결과를 고치거나 직접 입력할 수 있습니다)</label>
+      <textarea id="tx${k}" data-k="${k}">${esc(r.text)}</textarea>
+      <div class="metrics">
+        <div class="metric"><b data-f="words">${a.words}</b><span>단어</span></div>
+        <div class="metric"><b>${r.secs}초</b><span>답변 시간</span></div>
+        <div class="metric"><b data-f="wpm">${a.wpm}</b><span>분당 단어</span></div>
+        <div class="metric"><b data-f="lv">${a.lv}</b><span>간이 등급</span></div>
+      </div>
+      <div class="hint">사용한 연결어·구조</div>
+      <div class="found" data-f="found">${foundChips(a)}</div>
+      <div class="model"><div class="row" style="justify-content:space-between;margin-bottom:6px"><strong style="color:var(--pine)">${T.model} 모범 답안 (${esc(ref.name)})</strong><button class="btn" data-mplay="${k}">${ICON.play}듣기</button></div>
+        <p>${esc(model.map(s=>s[0]).join(" "))}</p>
+        ${S.showKo?`<p class="hint" style="margin:0">${esc(model.map(s=>s[1]).join(" "))}</p>`:""}
+      </div>
+      ${sampleFn?`<div class="row" style="margin-top:14px"><button class="btn primary" data-ai="${k}">AI 첨삭 받기</button><span class="hint">예상 등급, 고칠 문장, 더 나은 답변을 알려 줍니다.</span></div><div data-aiout="${k}"></div>`:""}
+    </div>
+  </details>`;
+}
+function foundChips(a){
+  const extra=[]; if(a.past) extra.push("과거시제"); if(a.perfect) extra.push("현재완료"); if(a.rel) extra.push("관계사절");
+  const items=[...a.found.map(f=>f), ...extra];
+  const missing=["because","for example","however","that's why","looking back"].filter(x=>!a.found.includes(x)).slice(0,3);
+  return (items.length? items.map(x=>`<span class="chip">${esc(x)}</span>`).join("") : `<span class="chip no">아직 없음</span>`) + missing.map(x=>`<span class="chip no">+ ${esc(x)} 써 보기</span>`).join("");
+}
+function bindResult(r,k){
+  const ta=$(`#tx${k}`);
+  ta.oninput=()=>{ r.text=ta.value; const a=analyze(r.text,r.secs||60); r.a=a; T.results[k].text=ta.value;
+    const box=ta.closest(".resbody"); box.querySelector('[data-f="words"]').textContent=a.words; box.querySelector('[data-f="wpm"]').textContent=r.secs? a.wpm : "-"; box.querySelector('[data-f="lv"]').textContent=a.lv; box.querySelector('[data-f="found"]').innerHTML=foundChips(a); };
+  const mp=document.querySelector(`[data-mplay="${k}"]`); if(mp) mp.onclick=()=>{ const ref=TOPICS.find(t=>t.id===r.q.ref); speak(ref.L[T.model].map(s=>s[0]).join(" ")); };
+  const ai=document.querySelector(`[data-ai="${k}"]`); if(ai) ai.onclick=()=>aiFeedback(r,k,ai);
+}
+async function aiFeedback(r,k,btn){
+  const out=document.querySelector(`[data-aiout="${k}"]`);
+  const text=(r.text||"").trim();
+  if (text.split(/\s+/).length<5){ out.innerHTML=`<p class="notice">분석하려면 답변이 다섯 단어 이상 필요합니다. 위 칸에 답변을 입력해 주세요.</p>`; return; }
+  btn.disabled=true; out.innerHTML=`<p class="hint" style="margin-top:10px">AI가 답변을 읽는 중입니다… (10~40초)</p>`;
+  const prompt=`You are an experienced OPIc (ACTFL Oral Proficiency Interview by computer) rater and English speaking coach for Korean learners.
+Test-taker profile: Jace, a Korean man in his mid-fifties, works at Samsung SDS on the Digital SCM team (system improvement and operations), family of four (wife, son, daughter), lives in an apartment near Lake Park in Dongtan (a new city south of Seoul), walks around the lake with his wife for an hour after dinner, uses the outdoor exercise equipment and stretches often, watches movies at the CGV multiplex in Lake Park, remembers the Tomb Raider series most, recently saw the Korean film 'The Man Who Lives with the King' (왕과 사는 남자) and found it very sad, is interested in park golf, has traveled in Korea (Busan, Jeju, Chiaksan, Sokcho) and abroad (Europe, Southeast Asia), and his favorite trip was Boracay in the Philippines (great resort, fun water sports, liked staying in one place; the only hassle was taking a boat because the island has no airport). If the question is a role-play, judge whether he completed the task (asked 3-4 questions, or explained the problem and offered 2-3 alternatives).
+Question: "${r.q.q}"
+Answer duration: ${r.secs||"unknown"} seconds.
+Transcribed answer (from speech recognition, may contain recognition errors; do not penalize obvious transcription glitches):
+"""${text}"""
+
+Evaluate the answer and respond ONLY with a JSON object, no markdown, in this exact shape:
+{"level":"one of NL,NM,NH,IL,IM1,IM2,IM3,IH,AL","summary":"2 sentences in Korean explaining the level","strengths":["Korean, up to 3 items"],"fixes":[{"original":"a phrase or sentence from the answer","better":"a natural corrected English version","why":"short Korean reason"}],"next":["up to 3 concrete Korean tips to reach the next level"],"better_answer":"a natural English answer about 1 level higher than the estimated level, written in first person for this test-taker, keeping his facts, 90-160 words"}
+Give up to 5 fixes, most important first.`;
+  try{
+    const d = await sampleFn.json(prompt, {modelTier:"default"});
+    out.innerHTML=`<div class="ai">
+      <h4>AI 예상 등급: ${esc(d.level||"-")}</h4><p style="margin:0">${esc(d.summary||"")}</p>
+      ${(d.strengths||[]).length?`<h4>잘한 점</h4><ul>${d.strengths.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+      ${(d.fixes||[]).length?`<h4>고쳐 말하기</h4>${d.fixes.map(f=>`<div class="fix"><s>${esc(f.original)}</s><br><ins>${esc(f.better)}</ins> <button class="btn" style="padding:2px 8px;font-size:12px" data-say="${esc(f.better)}">${ICON.play}</button><div class="hint">${esc(f.why)}</div></div>`).join("")}`:""}
+      ${(d.next||[]).length?`<h4>다음 등급으로 가려면</h4><ul>${d.next.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+      ${d.better_answer?`<h4>한 단계 높인 답변</h4><p style="font-family:var(--serif);font-size:15px;margin:0 0 6px">${esc(d.better_answer)}</p><button class="btn" data-say="${esc(d.better_answer)}">${ICON.play}듣기</button>`:""}
+    </div>`;
+    out.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  }catch(e){
+    const code=e&&e.code;
+    if (code==="not_granted"){ out.innerHTML=`<p class="notice">AI 첨삭이 허용되지 않았습니다. 이번 화면에서는 간이 분석만 사용할 수 있습니다.</p>`; document.querySelectorAll("[data-ai]").forEach(b=>b.closest(".row").remove()); sampleFn=null; return; }
+    out.innerHTML=`<p class="notice">${code==="rate_limited"?"요청이 많습니다. 잠시 후 다시 눌러 주세요.":"AI 첨삭을 받지 못했습니다. 잠시 후 다시 시도해 주세요."}</p>`;
+  }finally{ btn.disabled=false; }
+}
+
+/* ---------- nav ---------- */
+function setView(v){
+  stopAll(); if(answering) stopAnswer(true);
+  if (S.view==="test" && v!=="test" && T.phase==="q"){ T.phase = T.results.length? "result" : "setup"; }
+  S.view=v;
+  $("#tab-study").setAttribute("aria-selected", v==="study"); $("#tab-test").setAttribute("aria-selected", v==="test");
+  if (v==="study") renderStudy(); else renderTest();
+  window.scrollTo({top:0});
+}
+$("#tab-study").onclick=()=>setView("study");
+$("#tab-test").onclick=()=>setView("test");
+renderStudy();
+})();
+</script>
+
+<script>
+(function(){
+  var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  var btn = document.getElementById("installBtn"), deferred = null;
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); deferred = e; if(!standalone) btn.classList.add("show"); });
+  window.addEventListener("appinstalled", function(){ btn.classList.remove("show"); deferred = null; });
+  if (isIOS && !standalone) btn.classList.add("show");
+  btn.addEventListener("click", function(){
+    if (deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred = null; btn.classList.remove("show"); }); return; }
+    var bg = document.createElement("div"); bg.className = "sheet-bg";
+    bg.innerHTML = '<div class="sheet" role="dialog" aria-label="홈 화면에 추가"><h3>아이폰에 앱 설치하기</h3><ol><li>Safari 아래쪽의 <b>공유</b> 버튼(네모에 위쪽 화살표)을 누릅니다.</li><li>목록에서 <b>홈 화면에 추가</b>를 누릅니다.</li><li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 앱 아이콘이 생깁니다.</li></ol><button class="btn primary" style="width:100%;justify-content:center">확인</button></div>';
+    bg.addEventListener("click", function(ev){ if (ev.target === bg || ev.target.tagName === "BUTTON") bg.remove(); });
+    document.body.appendChild(bg);
+  });
+  if ("serviceWorker" in navigator && /^https:|^http:\/\/localhost/.test(location.href)){
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
+})();
+</script>
+</body>
+</html>
