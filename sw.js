@@ -1,5 +1,5 @@
 /* 오프라인 캐시: 앱 파일은 먼저 캐시에서, 새 버전은 뒤에서 받아 둡니다. 파일을 고치면 VERSION을 올리세요. */
-const VERSION = "opicwalk-v10";
+const VERSION = "opicwalk-v11";
 const SHELL = ["./", "index.html", "native-bridge.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
