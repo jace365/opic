@@ -130,6 +130,8 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
 .sent .ko{margin:6px 0 0;color:var(--ink);font-size:14.5px;opacity:.85}
 .sent .pr{margin:2px 0 0;color:var(--moss);font-size:14px}
 .hide-ko .ko,.hide-pr .pr{display:none}
+.cb{color:var(--moss);font-weight:700;margin-left:.3em;opacity:.85;user-select:none}
+body.no-ck .cb{display:none}
 .acts{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .acts .btn{padding:5px 11px;font-size:13px}
 .check{grid-column:2;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
@@ -364,7 +366,7 @@ const store = {
 };
 const S = {
   view:"study", topic: store.get("topic","intro"), level: store.get("level","IH"),
-  showKo: store.get("showKo", true), showPr: store.get("showPr", true), rate: store.get("rate", 0.9),
+  showKo: store.get("showKo", true), showPr: store.get("showPr", true), chunk: store.get("chunk", true), rate: store.get("rate", 0.9),
   compare:false,
   rep: store.get("rep", 1),            // 반복 횟수 (0 = 무한)
   repScope: store.get("repScope", "level"), // level: 선택한 레벨만 · all: IM1→AL 레벨 전체
@@ -428,9 +430,40 @@ function fillVoiceSel(){
 }
 let warnedVoice=false;
 /* ---------- follow-along highlight ---------- */
+/* ---------- 끊어 읽기(의미 단위) 표시: 문장부호·접속사·전치사 앞에서 자동으로 / 표시 ---------- */
+const CK_CONJ=new Set("and but so because when while if although though since until unless whereas which who whom whose where or".split(" "));
+const CK_PREP=new Set("in on at with for from near during about after before into through without like than across around".split(" "));
+const CK_TO=new Set(["to"]);
+const CK_KEEP=new Set(["in disguise","in touch","in mind","on edge","at all","by the way","in fact"].map(x=>x.split(" ").slice(0,2).join(" ")));
+const CK_NOBRK=new Set(("a an the my your his her its our their this that these those some any every each no very so more most much many few such and or but to of not next "+
+ "in on at with for from near during about after before into through without like than across around by "+
+ "i you he she we they it i'm you're he's she's it's we're they're i've we've i'd i'll there's that's am is are was were be been being have has had do does did can could will would should might must "+
+ "keep keeps get gets getting got gotten go goes going went gone count counting catch catching come comes coming look looking take taking put give pick pay").split(" "));
+function chunkBreaks(text){ // 끊어 읽기: 이 단어 '뒤'에서 끊을지 여부 배열
+  const ws=text.match(/\S+/g)||[]; const n=ws.length, br=new Array(n).fill(false);
+  const bare=w=>w.toLowerCase().replace(/^[^a-z']+|[^a-z']+$/g,"");
+  let run=0;
+  for(let i=0;i<n-1;i++){
+    run++;
+    const w=ws[i], nx=bare(ws[i+1]), cur=bare(w), left=n-1-i;
+    let b=false;
+    const nx2=i+2<n?bare(ws[i+2]):"";
+    const keep=CK_KEEP.has(nx+" "+nx2)||((CK_PREP.has(nx)||nx==="to")&&CK_PREP.has(nx2));
+    if(/[.!?]["')]?$/.test(w)) b=true;
+    else if(/[,;:]$|[—–]$/.test(w) && !(left===1 && /[.!?]$/.test(ws[i+1]))) b=true;
+    else if(left>=2 && !keep && !CK_NOBRK.has(cur)){
+      if(CK_CONJ.has(nx) && run>=((nx==="and"||nx==="or")?4:3)) b=true;
+      else if(CK_PREP.has(nx) && run>=4) b=true;
+      else if(CK_TO.has(nx) && run>=4 && left>=2) b=true;
+      else if(run>=7 && (CK_PREP.has(nx)||nx==="that")) b=true;
+    }
+    if(b){ br[i]=true; run=0; }
+  }
+  return br;
+}
 function wordsHTML(text){ // wrap each word with its char offset in the spoken text
-  let out="", last=0, m; const re=/\S+/g;
-  while((m=re.exec(text))){ out+=esc(text.slice(last,m.index))+`<span class="kw" data-c="${m.index}">${esc(m[0])}</span>`; last=m.index+m[0].length; }
+  let out="", last=0, m, k=0; const re=/\S+/g; const br=chunkBreaks(text);
+  while((m=re.exec(text))){ out+=esc(text.slice(last,m.index))+`<span class="kw" data-c="${m.index}">${esc(m[0])}</span>`+(br[k]?'<span class="cb" aria-hidden="true">/</span>':""); last=m.index+m[0].length; k++; }
   return out+esc(text.slice(last));
 }
 function sentHTML(arr){ return arr.map(t=>`<span class="ks">${wordsHTML(t)}</span>`).join(" "); }
@@ -735,6 +768,7 @@ function renderStudy(){
       <div class="toolbar">
         <label class="toggle"><input type="checkbox" id="optKo" ${S.showKo?"checked":""}>한글 해석</label>
         <label class="toggle"><input type="checkbox" id="optPr" ${S.showPr?"checked":""}>한글 발음</label>
+        <label class="toggle" title="의미 단위마다 / 표시"><input type="checkbox" class="optCk" ${S.chunk?"checked":""}>끊어 읽기 /</label>
         <span class="seg" role="group" aria-label="읽기 속도">
           ${[[0.6,"아주 느리게"],[0.75,"느리게"],[0.9,"보통"],[1.05,"빠르게"]].map(([r,l])=>`<button data-rate="${r}" aria-pressed="${Math.abs(S.rate-r)<.01}">${l}</button>`).join("")}
         </span>
@@ -752,7 +786,7 @@ function renderStudy(){
         <div class="rep-row"><span class="rep-l">문장 사이</span><span class="seg" role="group" aria-label="문장 사이 쉬는 시간">${GAP_OPTS.map(([g,l])=>`<button data-gap="${g}" aria-pressed="${S.gap===g}">${l}</button>`).join("")}</span></div>
         <div class="rep-row" ${enVoices.length?"":"hidden"}><span class="rep-l">목소리</span><select class="voiceSel" aria-label="목소리">${voiceOptions()}</select></div>
       </div>
-      <p class="follow">듣기를 누르면 읽는 문장은 주황색 테두리로, 읽는 단어는 주황색 칸으로 표시됩니다. 마지막으로 들은 문장은 왼쪽 막대로 남습니다.</p>
+      <p class="follow">듣기를 누르면 읽는 문장은 주황색 테두리로, 읽는 단어는 주황색 칸으로 표시됩니다. 마지막으로 들은 문장은 왼쪽 막대로 남습니다. 초록색 / 는 끊어 읽는 자리입니다. / 에서 살짝 쉬고, / 사이는 한 호흡으로 이어 말해 보세요.</p>
 
       ${S.compare ? renderCompare(t) : `
       <ol class="sents ${S.showKo?"":"hide-ko"} ${S.showPr?"":"hide-pr"}" id="sents">
@@ -787,6 +821,9 @@ function renderStudy(){
 function renderCompare(t){
   return `<div class="compare">${LEVELS.map(lv=>{ const a=t.L[lv]; return `<article class="cmp" style="--c:${LVC[lv]}"><h3>${lv}</h3><div class="wc">${a.length}문장 · ${wc(a)}단어</div><p data-cmptext="${lv}">${sentHTML(a.map(s=>s[0]))}</p><div style="margin-top:10px"><button class="btn" data-cmpplay="${lv}">${ICON.play}듣기</button></div></article>`; }).join("")}</div>`;
 }
+function applyChunk(){ document.body.classList.toggle("no-ck", !S.chunk); document.querySelectorAll(".optCk").forEach(x=>x.checked=S.chunk); }
+document.addEventListener("change", e=>{ if(e.target && e.target.classList && e.target.classList.contains("optCk")){ S.chunk=e.target.checked; store.set("chunk",S.chunk); applyChunk(); } });
+if (document.body) applyChunk(); else document.addEventListener("DOMContentLoaded", applyChunk);
 function bindStudy(){
   document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{ stopAll(); S.topic=b.dataset.topic; store.set("topic",S.topic); renderStudy(); window.scrollTo({top:0}); });
   document.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{ stopAll(); S.level=b.dataset.level; store.set("level",S.level); renderStudy(); });
@@ -1215,6 +1252,7 @@ function renderExpr(){
       ${EXPR_CATS.map(c=>`<button class="chipbtn" data-xc="${c.id}" aria-pressed="${xcat===c.id}">${esc(c.name)}</button>`).join("")}
       <button class="chipbtn" data-xc="pat" aria-pressed="${xcat==="pat"}">주제별 핵심 패턴</button>
       <label class="toggle" style="flex:none;margin-left:8px"><input type="checkbox" id="hideL" ${hideLearned?"checked":""}>외운 표현 숨기기</label>
+      <label class="toggle" style="flex:none;margin-left:8px" title="의미 단위마다 / 표시"><input type="checkbox" class="optCk" ${S.chunk?"checked":""}>끊어 읽기 /</label>
     </div>
     ${xcat==="pat" ? "" : cats.map(c=>{ const items=EXPR.filter(x=>x.cat===c.id && !(hideLearned&&learned.has(x.id)));
         return `<h3 class="xcat-t">${esc(c.name)}</h3>${items.length?`<div class="xgrid">${items.map(xCard).join("")}</div>`:`<p class="hint">이 분류의 표현을 모두 외웠습니다.</p>`}`; }).join("")}
